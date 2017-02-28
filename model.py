@@ -73,6 +73,16 @@ steering_angles = get_steering_values(training)
 plot_histogram("steering values", steering_angles, change_step=0.01)
 
 
+# # Extract image names
+
+# In[14]:
+
+from DataHelper import get_image_center_values 
+image_names = get_image_center_values(training)
+print("image count", image_names.shape[0])
+print(image_names[1])
+
+
 # In[ ]:
 
 
