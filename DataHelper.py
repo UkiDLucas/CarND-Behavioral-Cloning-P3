@@ -28,18 +28,9 @@ def predict_class(predictions, classes):
     return predicted_class
 
 
-# In[3]:
+# In[ ]:
 
-# http://localhost:8888/notebooks/ImageHelper.ipynb#Read-image-from-the-disk
-def read_image(image_path):
-    import cv2
-    # cv2.IMREAD_COLOR 
-    # cv2.COLOR_BGR2GRAY 
-    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    #print("image shape", image.shape)
-    #plt.imshow(image, cmap='gray')
-    #plt.show()
-    return np.array(image)
+
 
 
 # In[4]:

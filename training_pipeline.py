@@ -9,7 +9,7 @@
 
 # In[1]:
 
-data_dir = "../_DATA/CarND/p3_behavioral_cloning/r_001/"
+data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_001/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_normalized.csv"
 model_dir = "../_DATA/MODELS/"
@@ -92,6 +92,23 @@ image_paths = []
 for image_name in image_names:
     image_paths.extend([data_dir + image_dir + image_name])
 print(image_paths[1]) 
+
+
+# In[10]:
+
+import matplotlib.pyplot as plt
+import numpy as np
+from DataHelper import read_image
+
+training_features = np.array([ read_image(path) for path in image_paths] )
+
+print ("training_features matrix shape", training_features.shape)
+
+sample_image = training_features[2]
+plt.imshow(sample_image) # cmap='gray' , cmap='rainbow'
+plt.show()
+
+print(sample_image[0][0:15])
 
 
 # In[ ]:

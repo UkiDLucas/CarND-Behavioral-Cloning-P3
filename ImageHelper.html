@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>training_pipeline</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>ImageHelper</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11773,113 +11773,38 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Train-Model">Train Model<a class="anchor-link" href="#Train-Model">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Set-parameters-that-will-control-the-execution">Set parameters that will control the execution<a class="anchor-link" href="#Set-parameters-that-will-control-the-execution">&#182;</a></h2>
-</div>
-</div>
-</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/CarND/p3_behavioral_cloning/set_001/&quot;</span>
-<span class="n">image_dir</span> <span class="o">=</span> <span class="s2">&quot;IMG/&quot;</span>
-<span class="n">driving_data_csv</span> <span class="o">=</span> <span class="s2">&quot;driving_log_normalized.csv&quot;</span>
-<span class="n">model_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/MODELS/&quot;</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;model_p3_14x64x3_&quot;</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
-<span class="n">nb_epoch</span> <span class="o">=</span> <span class="mi">40</span> 
-<span class="n">model_to_continue_training</span> <span class="o">=</span> <span class="s2">&quot;previous_model.h5&quot;</span>
-<span class="n">previous_trained_epochs</span> <span class="o">=</span> <span class="mi">30</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Allocate-only-a-fraction-of-memory-to-TensorFlow-GPU-process">Allocate only a fraction of memory to TensorFlow GPU process<a class="anchor-link" href="#Allocate-only-a-fraction-of-memory-to-TensorFlow-GPU-process">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">eventlet</span>
+<span class="kn">import</span> <span class="nn">eventlet.wsgi</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="n">gpu_options</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">GPUOptions</span><span class="p">(</span><span class="n">per_process_gpu_memory_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span> <span class="c1"># try range from 0.333 ot .9</span>
-<span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">(</span><span class="n">log_device_placement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpu_options</span><span class="o">=</span><span class="n">gpu_options</span><span class="p">))</span>
+<span class="kn">import</span> <span class="nn">socketio</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="k">as</span> <span class="nn">mpimg</span>
 
-<span class="c1">#### Show available CPU and GPU(s)</span>
-<span class="kn">from</span> <span class="nn">tensorflow.python.client</span> <span class="k">import</span> <span class="n">device_lib</span>
-<span class="k">def</span> <span class="nf">get_available_CPU_GPU</span><span class="p">():</span>
-    <span class="n">devices</span> <span class="o">=</span> <span class="n">device_lib</span><span class="o">.</span><span class="n">list_local_devices</span><span class="p">()</span>
-    <span class="c1">#return [x.name for x in devices if x.device_type == &#39;CPU&#39;]</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">devices</span> <span class="p">]</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">ImageOps</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">keras.models</span> <span class="k">import</span> <span class="n">load_model</span>
+<span class="kn">from</span> <span class="nn">keras.preprocessing.image</span> <span class="k">import</span> <span class="n">ImageDataGenerator</span><span class="p">,</span> <span class="n">array_to_img</span><span class="p">,</span> <span class="n">img_to_array</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">get_available_CPU_GPU</span><span class="p">())</span>
-</pre></div>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[&#39;/cpu:0&#39;, &#39;/gpu:0&#39;]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Fetch-data-from-CSV-file">Fetch data from CSV file<a class="anchor-link" href="#Fetch-data-from-CSV-file">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span>  <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">read_csv</span>
-<span class="n">csv_path</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="n">driving_data_csv</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;csv_path&quot;</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">)</span>
-<span class="n">headers</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">driving_data_csv</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">array</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">scipy.misc</span>
 </pre></div>
 
 </div>
@@ -11899,442 +11824,6 @@ div#notebook {
 </div>
 </div>
 
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>csv_path ../_DATA/CarND/p3_behavioral_cloning/set_001/driving_log_normalized.csv
-Number of imported CSV rows: 11723
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Split-data-into-training,-testing-and-validation-sets">Split data into training, testing and validation sets<a class="anchor-link" href="#Split-data-into-training,-testing-and-validation-sets">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">split_random</span>
-<span class="n">training</span><span class="p">,</span> <span class="n">testing</span><span class="p">,</span> <span class="n">validation</span> <span class="o">=</span> <span class="n">split_random</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">percent_train</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span> <span class="n">percent_test</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span> 
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="n">training</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">,</span> <span class="n">testing</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;validation&quot;</span><span class="p">,</span> <span class="n">validation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>percent_validation 10
-training (8792, 7)
-testing (1759, 7)
-validation (1171, 7)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Fetch-and-visualize-training-steering-angles">Fetch and visualize training steering angles<a class="anchor-link" href="#Fetch-and-visualize-training-steering-angles">&#182;</a></h1><p>I would like to train a car on the set that has a nice bell curve distribution of values:</p>
-<ul>
-<li>I can drive the car on the track backwards</li>
-<li>I can flip each image (and value)</li>
-</ul>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">plot_histogram</span><span class="p">,</span> <span class="n">get_steering_values</span><span class="p">,</span> <span class="n">find_nearest</span>
-<span class="n">steering_angles</span> <span class="o">=</span> <span class="n">get_steering_values</span><span class="p">(</span><span class="n">training</span><span class="p">)</span>
-<span class="n">plot_histogram</span><span class="p">(</span><span class="s2">&quot;steering values&quot;</span><span class="p">,</span> <span class="n">steering_angles</span><span class="p">,</span> <span class="n">change_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>min_value -0.893879
-max_value 0.965902
-spread 1.85978
-recommended number of classes 186
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-<div class="prompt"></div>
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-Z111Z111Z111N76udquqRVM9yKh1g64GdulZ3xm4pXeHqjoZOHk2CzVekpXTiYwXIuuqO+uqG+up
-O+uqO+uqO+uqu5mqq01mojAz6DvAHkl2T7I5cDiwfMhlkiRJGpqRalmrqvVJXgb8G82tO06tqiuG
-XCxJkqShGalgDaCqzgHOGXY5JjHUbtg5xrrqzrrqxnrqzrrqzrrqzrrqbkbqaqQmGEiSJOk3jdqY
-NUmSJPUwWJtAku2SrEhybfu+bZ99nprkkp7XfyZ5VrvttCTX92zba/bPYnZ0qat2v3t66mN5T/ru
-SS5s83+6nVwy73S8pvZK8q0kVyS5LMlze7bN+2sqyUFJrk6yKsnxfbZv0V4jq9prZknPtte36Vcn
-OXA2yz0MHerq1UmubK+jc5Ps1rOt73dxvupQVy9Osq6nTl7Ss+2I9jt7bZIjZrfks69DXS3rqadr
-ktzes23BXFdJTk2yNsn3JtieJO9q6/GyJE/o2Tb1a6qqfPV5Af8IHN8uHw+8fZL9twN+CjywXT8N
-ePawz2OU6gq4a4L0M4HD2+UPAH817HMaVj0BjwL2aJd3BNYA27Tr8/qaoplU9APg4cDmwKXAnuP2
-+WvgA+3y4cCn2+U92/23AHZvj7PpsM9pyHX11J7fR381Vlftet/v4nx8dayrFwPv6ZN3O+C69n3b
-dnnbYZ/TMOtq3P4vp5kIuBCvqz8CngB8b4LthwBfBgLsC1y4MdeULWsTOxQ4vV0+HXjWJPs/G/hy
-Vf1ioKUaTVOtq3slCbA/cNZ08s8xk9ZTVV1TVde2y7cAa4Ep30Bxjrr3cXNV9V/A2OPmevXW4VnA
-Ae01dChwRlXdXVXXA6va481Xk9ZVVZ3X8/voApr7Vi5EXa6riRwIrKiqn1bVbcAK4KABlXMUTLWu
-ngd8alZKNmKq6hs0DTQTORT4aDUuALZJsphpXlMGaxPboarWALTvD5tk/8O5/0V7Ytv8uSzJFoMo
-5IjoWldbJlmZ5IKx7mLgocDtVbW+XV8N7DTY4g7NlK6pJPvQ/Hf7g57k+XxN7QTc1LPe71q4d5/2
-mrmD5hrqknc+mer5HkXzX/6Yft/F+aprXf3P9rt1VpKxm7N7XU1wvm23+u7A13qSF9J1NZmJ6nJa
-19TI3bpjNiX5KvDbfTa9cYrHWQz8N5r7w415PfAjmj+2JwOvA946vZIO3wzV1a5VdUuShwNfS3I5
-8LM++83ZKcozfE19DDiiqn7dJs+ra6qP9Ekbfy1MtE+XvPNJ5/NN8gJgKfCUnuT7fRer6gf98s8D
-XerqC8CnquruJMfQtN7u3zHvfDKV8z0cOKuq7ulJW0jX1WRm9HfVgg7WquppE21LcmuSxVW1pv3D
-uXYDh3oOcHZV/arn2GvaxbuTfAR47YwUekhmoq7abj2q6rok5wN7A5+laR5+QNtScr9HjM0lM1FP
-SR4CfAl4U9t8PnbseXVN9THp4+Z69lmd5AHA1jRdEV3yziedzjfJ02j+UXhKVd09lj7Bd3G+/lHt
-8hjDn/Ssfgh4e0/e/cblPX/GSzg6pvI9Ohw4tjdhgV1Xk5moLqd1TdkNOrHlwNgsjSOAz29g3/v1
-27d/jMfGZD0L6DtjZJ6YtK6SbDvWbZdke+DJwJXVjLg8j2bM34T554ku9bQ5cDbNWIfPjNs236+p
-Lo+b663DZwNfa6+h5cDhaWaL7g7sAXx7lso9DJPWVZK9gQ8Cf1pVa3vS+34XZ63ks69LXS3uWf1T
-4Kp2+d+AZ7R1ti3wDH6zB2W+6fTIxySPphkc/62etIV2XU1mOfCidlbovsAd7T/c07umhj2jYlRf
-NONgzgWubd+3a9OXAh/u2W8JcDOwybj8XwMup/mD+nFgq2Gf0zDrCnhSWx+Xtu9H9eR/OM0f1lXA
-Z4Athn1OQ6ynFwC/Ai7pee21UK4pmhlU19D8N/7GNu2tNAEHwJbtNbKqvWYe3pP3jW2+q4GDh30u
-I1BXXwVu7bmOlrfpE34X5+urQ139A3BFWyfnAb/Tk/cv2uttFXDksM9l2HXVrp8AnDQu34K6rmga
-aNa0v69X04wLPQY4pt0e4L1tPV4OLN2Ya8onGEiSJI0wu0ElSZJGmMGaJEnSCDNYkyRJGmEGa5Ik
-SSPMYE2SJGmEGaxJWvCS3DXsMkjSRAzWJEmSRpjBmqR5J8nbk/x1z/oJSd6c5NwkFye5PMmhffLt
-l+SLPevvSfLidvn3knw9yUVJ/q3niRKvSHJl+xDwM2bh9CQtMAv62aCS5q0zgP8LvK9dfw5wELCs
-qn7WPg7ngiTLq8OdwZNsBrwbOLSq1iV5LnAizZ3Ijwd2r+Yh4NsM4mQkLWwGa5Lmnar6bpKHJdkR
-WATcRvNomGVJ/gj4NbATsAPwow6HfDTwWGBF82hWNm2PB3AZ8Ikk/wL8y4yeiCRhsCZp/jqL5mHv
-v03T0vZ8msDt96rqV0luoHnWaK/1/ObwkLHtAa6oqj/o8zl/DPwRzQPA/y7JY6pq/YydhaQFzzFr
-kuarM4CWNoTsAAAAxElEQVTDaQK2s4CtgbVtoPZUYLc+eX4I7JlkiyRbAwe06VcDi5L8ATTdokke
-k2QTYJeqOg/4W2AbYKuBnpWkBceWNUnzUlVdkeTBwM1VtSbJJ4AvJFkJXAJ8v0+em5KcSdO1eS3w
-3Tb9v5I8G3hXG8Q9gGZM3DXAx9u00IyJu302zk/SwpEOY2slSZI0JHaDSpIkjTCDNUmSpBFmsCZJ
-kjTCDNYkSZJGmMGaJEnSCDNYkyRJGmEGa5IkSSPMYE2SJGmE/X8myyBh1E0LzAAAAABJRU5ErkJg
-gg==
-"
->
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Extract-image-names">Extract image names<a class="anchor-link" href="#Extract-image-names">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">get_image_center_values</span> 
-<span class="n">image_names</span> <span class="o">=</span> <span class="n">get_image_center_values</span><span class="p">(</span><span class="n">training</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;image count&quot;</span><span class="p">,</span> <span class="n">image_names</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">image_names</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>image count 8792
-center_2017_01_21_01_11_57_483.jpg
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Create-a-list-of-image-paths">Create a list of image paths<a class="anchor-link" href="#Create-a-list-of-image-paths">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">image_paths</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">image_name</span> <span class="ow">in</span> <span class="n">image_names</span><span class="p">:</span>
-    <span class="n">image_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">image_dir</span> <span class="o">+</span> <span class="n">image_name</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">image_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> 
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>../_DATA/CarND/p3_behavioral_cloning/set_001/IMG/center_2017_01_21_01_11_57_483.jpg
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">read_image</span>
-
-<span class="n">training_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">read_image</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">image_paths</span><span class="p">]</span> <span class="p">)</span>
-
-<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;training_features matrix shape&quot;</span><span class="p">,</span> <span class="n">training_features</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-<span class="n">sample_image</span> <span class="o">=</span> <span class="n">training_features</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample_image</span><span class="p">)</span> <span class="c1"># cmap=&#39;gray&#39; , cmap=&#39;rainbow&#39;</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">sample_image</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">15</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>training_features matrix shape (8792,)
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-10-4b8ebd3d037f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span> 
-<span class="ansi-green-intense-fg ansi-bold">      9</span> sample_image <span class="ansi-blue-fg">=</span> training_features<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-fg">---&gt; 10</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>imshow<span class="ansi-blue-fg">(</span>sample_image<span class="ansi-blue-fg">)</span> <span class="ansi-red-fg"># cmap=&#39;gray&#39; , cmap=&#39;rainbow&#39;</span>
-<span class="ansi-green-intense-fg ansi-bold">     11</span> plt<span class="ansi-blue-fg">.</span>show<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span> 
-
-<span class="ansi-green-fg">/Users/ukilucas/anaconda3/envs/py352_tf_gpu/lib/python3.5/site-packages/matplotlib/pyplot.py</span> in <span class="ansi-cyan-fg">imshow</span><span class="ansi-blue-fg">(X, cmap, norm, aspect, interpolation, alpha, vmin, vmax, origin, extent, shape, filternorm, filterrad, imlim, resample, url, hold, data, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   3156</span>                         filternorm<span class="ansi-blue-fg">=</span>filternorm<span class="ansi-blue-fg">,</span> filterrad<span class="ansi-blue-fg">=</span>filterrad<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   3157</span>                         imlim<span class="ansi-blue-fg">=</span>imlim<span class="ansi-blue-fg">,</span> resample<span class="ansi-blue-fg">=</span>resample<span class="ansi-blue-fg">,</span> url<span class="ansi-blue-fg">=</span>url<span class="ansi-blue-fg">,</span> data<span class="ansi-blue-fg">=</span>data<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">-&gt; 3158</span><span class="ansi-red-fg">                         **kwargs)
-</span><span class="ansi-green-intense-fg ansi-bold">   3159</span>     <span class="ansi-green-fg">finally</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   3160</span>         ax<span class="ansi-blue-fg">.</span>_hold <span class="ansi-blue-fg">=</span> washold
-
-<span class="ansi-green-fg">/Users/ukilucas/anaconda3/envs/py352_tf_gpu/lib/python3.5/site-packages/matplotlib/__init__.py</span> in <span class="ansi-cyan-fg">inner</span><span class="ansi-blue-fg">(ax, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1890</span>                     warnings.warn(msg % (label_namer, func.__name__),
-<span class="ansi-green-intense-fg ansi-bold">   1891</span>                                   RuntimeWarning, stacklevel=2)
-<span class="ansi-green-fg">-&gt; 1892</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">return</span> func<span class="ansi-blue-fg">(</span>ax<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1893</span>         pre_doc <span class="ansi-blue-fg">=</span> inner<span class="ansi-blue-fg">.</span>__doc__
-<span class="ansi-green-intense-fg ansi-bold">   1894</span>         <span class="ansi-green-fg">if</span> pre_doc <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/Users/ukilucas/anaconda3/envs/py352_tf_gpu/lib/python3.5/site-packages/matplotlib/axes/_axes.py</span> in <span class="ansi-cyan-fg">imshow</span><span class="ansi-blue-fg">(self, X, cmap, norm, aspect, interpolation, alpha, vmin, vmax, origin, extent, shape, filternorm, filterrad, imlim, resample, url, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   5116</span>                               resample=resample, **kwargs)
-<span class="ansi-green-intense-fg ansi-bold">   5117</span> 
-<span class="ansi-green-fg">-&gt; 5118</span><span class="ansi-red-fg">         </span>im<span class="ansi-blue-fg">.</span>set_data<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   5119</span>         im<span class="ansi-blue-fg">.</span>set_alpha<span class="ansi-blue-fg">(</span>alpha<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   5120</span>         <span class="ansi-green-fg">if</span> im<span class="ansi-blue-fg">.</span>get_clip_path<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/Users/ukilucas/anaconda3/envs/py352_tf_gpu/lib/python3.5/site-packages/matplotlib/image.py</span> in <span class="ansi-cyan-fg">set_data</span><span class="ansi-blue-fg">(self, A)</span>
-<span class="ansi-green-intense-fg ansi-bold">    543</span>         if (self._A.dtype != np.uint8 and
-<span class="ansi-green-intense-fg ansi-bold">    544</span>                 not np.can_cast(self._A.dtype, np.float)):
-<span class="ansi-green-fg">--&gt; 545</span><span class="ansi-red-fg">             </span><span class="ansi-green-fg">raise</span> TypeError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;Image data can not convert to float&#34;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    546</span> 
-<span class="ansi-green-intense-fg ansi-bold">    547</span>         if (self._A.ndim not in (2, 3) or
-
-<span class="ansi-red-fg">TypeError</span>: Image data can not convert to float</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -12344,7 +11833,635 @@ center_2017_01_21_01_11_57_483.jpg
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Define RGB colors used in the code</span>
+<span class="n">RED</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">GREEN</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">BLUE</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">]</span>
+<span class="n">WHITE</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">]</span>
+<span class="n">GRAY</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">192</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">192</span><span class="p">]</span>
+<span class="n">VIOLET</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">153</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">255</span><span class="p">]</span>
+<span class="n">ORANGE</span> <span class="o">=</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Read-image-from-the-disk">Read image from the disk<a class="anchor-link" href="#Read-image-from-the-disk">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">read_image_binary</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    &lt;class &#39;PIL.JpegImagePlugin.JpegImageFile&#39;&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image</span>
+
+<span class="k">def</span> <span class="nf">read_image_array</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">cv2</span>
+    <span class="c1"># cv2.IMREAD_COLOR </span>
+    <span class="c1"># cv2.COLOR_BGR2GRAY </span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+    <span class="c1">#print(&quot;image shape&quot;, image.shape)</span>
+    <span class="c1">#plt.imshow(image, cmap=&#39;gray&#39;)</span>
+    <span class="c1">#plt.show()</span>
+    <span class="k">return</span> <span class="n">image</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">PIL</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="k">def</span> <span class="nf">resize_image_maintain_ratio</span><span class="p">(</span><span class="n">numpy_array_image</span><span class="p">,</span> <span class="n">new_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    I am NOT zero-padding at this moment, </span>
+<span class="sd">    just resizing for the longest size is equal to new_size.</span>
+<span class="sd">    The zero-padding can effectively by done later,</span>
+<span class="sd">    for example during machine learning.</span>
+<span class="sd">    There is no point of wasting space with</span>
+<span class="sd">    thens of thousands padded padded images. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># convert nympy array image to PIL.Image</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">numpy_array_image</span><span class="p">))</span>
+    <span class="n">old_width</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">old_height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="n">old_width</span> <span class="o">&gt;</span> <span class="n">old_height</span><span class="p">:</span>
+        <span class="c1"># by width since it is longer</span>
+        <span class="n">new_width</span> <span class="o">=</span> <span class="n">new_size</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_width</span> <span class="o">/</span> <span class="n">old_width</span><span class="p">)</span>
+        <span class="n">new_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">old_height</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># by height since it is longer</span>
+        <span class="n">new_width</span> <span class="o">=</span> <span class="n">new_size</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_width</span> <span class="o">/</span> <span class="n">old_width</span><span class="p">)</span>
+        <span class="n">new_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">old_height</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">)</span>
+        
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">new_width</span><span class="p">,</span> <span class="n">new_height</span><span class="p">),</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">ANTIALIAS</span><span class="p">)</span>
+    <span class="c1"># turn image into nympy array again</span>
+    <span class="k">return</span> <span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">mask_vertices</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">top_left</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="o">*</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">top_right</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="o">-</span><span class="n">width</span><span class="o">*</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+     
+    <span class="n">mid_left_high</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.2</span><span class="p">)</span> 
+    <span class="n">mid_right_high</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.2</span><span class="p">)</span>  
+    
+    <span class="n">mid_left_low</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.9</span><span class="p">)</span> 
+    <span class="n">mid_right_low</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.9</span><span class="p">)</span>
+    
+    <span class="c1"># on the bottom start high because of the dashboard</span>
+    <span class="n">bottom_center_left</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="o">*</span><span class="mf">0.27</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.95</span><span class="p">)</span> 
+    <span class="n">bottom_center_right</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="o">-</span><span class="n">width</span><span class="o">*</span><span class="mf">0.27</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.95</span><span class="p">)</span> 
+    
+    <span class="c1"># we are NOT following a center line in this code, so cut it out</span>
+    <span class="n">bottom_center</span> <span class="o">=</span> <span class="p">(</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">height</span><span class="o">*</span><span class="mf">0.55</span><span class="p">)</span> 
+
+
+    <span class="c1"># add points clockwise</span>
+    <span class="n">vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>
+        <span class="n">top_left</span><span class="p">,</span> 
+        <span class="n">top_right</span><span class="p">,</span> 
+        <span class="n">mid_right_high</span><span class="p">,</span> <span class="n">mid_right_low</span><span class="p">,</span>
+        <span class="n">bottom_center_right</span><span class="p">,</span>
+        <span class="n">bottom_center</span><span class="p">,</span> <span class="n">bottom_center_left</span><span class="p">,</span>
+        <span class="n">mid_left_low</span><span class="p">,</span> 
+        <span class="n">mid_left_high</span> 
+    <span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vertices</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">region_of_interest</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies an image mask.</span>
+<span class="sd">    </span>
+<span class="sd">    Only keeps the region of the image defined by the polygon</span>
+<span class="sd">    formed from `vertices`. The rest of the image is set to black.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#defining a blank mask to start with</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>   
+    
+    <span class="c1">#defining a 3 channel or 1 channel color to fill the mask with depending on the input image</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">channel_count</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># i.e. 3 or 4 depending on your image</span>
+        <span class="n">ignore_mask_color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,)</span> <span class="o">*</span> <span class="n">channel_count</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ignore_mask_color</span> <span class="o">=</span> <span class="mi">255</span>
+        
+    <span class="c1">#filling pixels inside the polygon defined by &quot;vertices&quot; with the fill color    </span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">fillPoly</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">ignore_mask_color</span><span class="p">)</span>
+    
+    <span class="c1">#returning the image only where mask pixels are nonzero</span>
+    <span class="n">masked_image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">masked_image</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">canny</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">low_threshold</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">high_threshold</span><span class="o">=</span><span class="mi">250</span><span class="p">):</span> 
+    <span class="c1"># homework low_threshold=20, high_threshold=130</span>
+    <span class="sd">&quot;&quot;&quot;Applies the Canny transform&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">Canny</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">low_threshold</span><span class="p">,</span> <span class="n">high_threshold</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">gaussian_blur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span> <span class="c1"># 5 </span>
+    <span class="sd">&quot;&quot;&quot;Applies a Gaussian Noise kernel&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="k">def</span> <span class="nf">grayscale</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Applies the Grayscale transform</span>
+<span class="sd">    This will return an image with only one color channel</span>
+<span class="sd">    but NOTE: to see the returned image as grayscale</span>
+<span class="sd">    you should call plt.imshow(gray, cmap=&#39;gray&#39;)&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_RGB2GRAY</span><span class="p">)</span>
+    <span class="c1"># Or use BGR2GRAY if you read an image with cv2.imread()</span>
+    <span class="c1"># return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">crop_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">upper</span> <span class="o">=</span> <span class="mi">70</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="mi">320</span>
+    <span class="n">lower</span> <span class="o">=</span> <span class="mi">140</span> <span class="c1"># 160 original</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">left</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">lower</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">image</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> <span class="k">def</span> <span class="nf">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;my image&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">should_plot</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">normalize_grayscale</span><span class="p">(</span><span class="n">image_data</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">grayscale_min</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">grayscale_max</span> <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span> <span class="p">(</span> <span class="p">(</span><span class="n">image_data</span> <span class="o">-</span> <span class="n">grayscale_min</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span> <span class="n">grayscale_max</span> <span class="o">-</span> <span class="n">grayscale_min</span> <span class="p">)</span> <span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">round_int</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">):</span>
+        <span class="c1"># return float(&#39;nan&#39;) # or x or return whatever makes sense</span>
+        <span class="k">return</span> <span class="mi">1000</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_round_int</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">round_int</span><span class="p">(</span><span class="mf">174.919753086</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">round_int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">round_int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">round_int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">calc_x</span><span class="p">(</span><span class="n">slope</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_intercept</span><span class="p">):</span>
+    
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">slope</span><span class="p">):</span> <span class="c1"># vertical line cannot have a slope</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slope</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">slope</span> <span class="o">==</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">y_intercept</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">y_intercept</span> <span class="o">==</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># temp</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">slope</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># flat line</span>
+            <span class="n">slope</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="c1"># avoid division by zero, result will be a large number, almost flat line</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_intercept</span><span class="p">)</span><span class="o">/</span><span class="n">slope</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">round_int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ValueError: calc_x That was no valid number.  slope&quot;</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;y_intercept&quot;</span><span class="p">,</span> <span class="n">y_intercept</span><span class="p">)</span>
+    <span class="k">return</span>   <span class="n">result</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">calc_y_intercept</span><span class="p">(</span><span class="n">slope</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">slope</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">calc_slope</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">):</span>        
+    <span class="n">rise</span> <span class="o">=</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span>
+    
+    <span class="n">run</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="n">rise</span><span class="o">/</span><span class="n">run</span>
+        <span class="k">return</span> <span class="n">slope</span>
+    <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ZeroDivisionError: calc_slope the slope cannot be calculated for a VERTICAL LINE.&quot;</span><span class="p">)</span>
+    
+
+<span class="c1"># TEST</span>
+<span class="c1">#print(calc_slope(-1, 2, 1, 3))</span>
+<span class="c1">#print(calc_slope(2, 2, 1, 3))</span>
+<span class="c1">#print(calc_slope(1, 2, 1, 3))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">side</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function determines if line</span>
+<span class="sd">    should be procesed as &quot;left&quot;, &quot;right&quot;</span>
+<span class="sd">    or rejected entirely as irrelevant.</span>
+
+<span class="sd">    side: LEFT, slope -0.923076923077</span>
+<span class="sd">    side: RIGHT, slope 0.65</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+
+    <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># right of the image frame</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># bottom of the image frame</span>
+
+    <span class="k">for</span> <span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span> <span class="ow">in</span> <span class="n">arrangeLineCoordinates</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="n">calc_slope</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span><span class="p">)</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">calc_y_intercept</span><span class="p">(</span><span class="n">slope</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
+        <span class="c1"># I am interested where is x (left, or right)</span>
+        <span class="c1"># if you extend the line to the bottom of the image</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">calc_x</span><span class="p">(</span><span class="n">slope</span><span class="p">,</span> <span class="n">y2</span> <span class="p">,</span> <span class="n">intercept</span><span class="p">)</span> 
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">x2</span> <span class="o">&lt;</span> <span class="n">width</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">width</span><span class="o">*</span><span class="mf">0.1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.95</span> <span class="o">&lt;</span> <span class="n">slope</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">)</span> <span class="p">:</span> <span class="c1"># LEFT negative</span>
+            <span class="k">return</span> <span class="s2">&quot;left&quot;</span>
+        <span class="k">elif</span>  <span class="p">(</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">width</span><span class="o">*</span><span class="mf">0.1</span> <span class="o">&lt;</span> <span class="n">x2</span> <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="mf">0.95</span> <span class="o">&gt;</span> <span class="n">slope</span> <span class="o">&gt;</span> <span class="mf">0.15</span><span class="p">):</span> <span class="c1"># RIGHT positive</span>
+            <span class="c1"># print(&quot;side: RIGHT, slope&quot;, slope)</span>
+            <span class="k">return</span> <span class="s2">&quot;right&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># print(&quot;irrelevant, slope&quot;, slope, &quot;x2&quot;, x2)</span>
+            <span class="k">return</span> <span class="s2">&quot;irrelevant&quot;</span> <span class="c1"># the line extends off screen, to be tested</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">arrangeLineCoordinates</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method enforces that given line,</span>
+<span class="sd">    has x1, y1 on TOP</span>
+<span class="sd">    and x2, y2 on the BOTTOM of the image.</span>
+<span class="sd">    </span>
+<span class="sd">    It is user responsibility to test</span>
+<span class="sd">    if line is a valid object.</span>
+<span class="sd">    I have no way to know what to return otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">y1</span> <span class="o">&gt;</span> <span class="n">y2</span><span class="p">:</span>
+                <span class="c1"># print(&quot;WARNING y1 &gt; y2 swapping the order&quot;)</span>
+                <span class="n">temp_x2</span> <span class="o">=</span> <span class="n">x1</span>
+                <span class="n">temp_y2</span> <span class="o">=</span> <span class="n">y1</span>
+                <span class="n">temp_x1</span> <span class="o">=</span> <span class="n">x2</span>
+                <span class="n">temp_y1</span> <span class="o">=</span> <span class="n">y2</span>
+
+                <span class="n">x1</span> <span class="o">=</span> <span class="n">temp_x1</span>
+                <span class="n">x2</span> <span class="o">=</span> <span class="n">temp_x2</span>
+                <span class="n">y1</span> <span class="o">=</span> <span class="n">temp_y1</span>
+                <span class="n">y2</span> <span class="o">=</span> <span class="n">temp_y2</span>   
+                <span class="n">line</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="c1">#print(&quot;Provided line has unexpected values&quot;, line)</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="c1"># Use this as visual clue that line is not correct</span>
+        <span class="c1">#print(&quot;Provided line has unexpected type&quot;, type(line))</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+                
+    <span class="k">return</span> <span class="n">line</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">draw_lines</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">WHITE</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;   </span>
+<span class="sd">    Lines are drown over the image, i.e. mutates the image.</span>
+<span class="sd">    If you want to make the lines semi-transparent, think about combining</span>
+<span class="sd">    this function with the weighted_img() function below</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">lines</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># no point processing is no lines were found</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># TypeError: &#39;NoneType&#39; object is not iterable</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">arrangeLineCoordinates</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1">#print(&quot;Oops!  draw_lines&quot;, line)</span>
+                <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="c1">#print(&quot;Oops!  draw_lines&quot;, line)</span>
+                <span class="n">cv2</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">hough_lines</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">min_line_len</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_line_gap</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    - rho ρ is the distance from the origin</span>
+<span class="sd">    - theta θ is the angle</span>
+<span class="sd">    - min_line_len minimum length of a line that will be created</span>
+<span class="sd">    - max_line_gap maximum distance between segments that will be connected to a single line</span>
+<span class="sd">    - threshold increasing(~ 50-60) will rule out the spurious lines.</span>
+<span class="sd">    defines the minimum number of intersections in a given grid cell that are required to choose a line.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">HoughLinesP</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> 
+                            <span class="n">minLineLength</span><span class="o">=</span><span class="n">min_line_len</span><span class="p">,</span> <span class="n">maxLineGap</span><span class="o">=</span><span class="n">max_line_gap</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lines</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># no point processing if no lines were found</span>
+        <span class="k">return</span> <span class="n">image</span>
+    
+    <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># right of the image frame</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># bottom of the image frame</span>
+
+    <span class="n">left_longest_line</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">right_longest_line</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">relevant_hough_lines_left</span> <span class="o">=</span> <span class="p">[]</span> 
+    <span class="n">relevant_hough_lines_right</span> <span class="o">=</span> <span class="p">[]</span> 
+    <span class="n">rejected_hough_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">longest_lines_left</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">longest_lines_right</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">longest_right</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">longest_left</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">x2</span><span class="p">,</span><span class="n">y2</span> <span class="ow">in</span> <span class="n">arrangeLineCoordinates</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+
+            <span class="c1"># get vertical HEIGHT of this line </span>
+            <span class="n">y_difference</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+
+            <span class="c1"># Categorize the lines to LEFT | RIGHT </span>
+            <span class="n">side_detected</span> <span class="o">=</span> <span class="n">side</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="s2">&quot;left&quot;</span> <span class="o">==</span> <span class="n">side_detected</span><span class="p">:</span>
+                <span class="n">relevant_hough_lines_left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">y_difference</span> <span class="o">&gt;</span> <span class="n">longest_left</span><span class="p">:</span>
+                    <span class="n">left_longest_line</span> <span class="o">=</span> <span class="n">line</span>
+                    <span class="n">longest_left</span> <span class="o">=</span> <span class="n">y_difference</span>
+                    
+            <span class="k">elif</span>  <span class="s2">&quot;right&quot;</span> <span class="o">==</span> <span class="n">side_detected</span><span class="p">:</span>
+                <span class="n">relevant_hough_lines_right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">y_difference</span> <span class="o">&gt;</span> <span class="n">longest_right</span><span class="p">:</span>
+                    <span class="n">right_longest_line</span> <span class="o">=</span> <span class="n">line</span>
+                    <span class="n">longest_right</span> <span class="o">=</span> <span class="n">y_difference</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rejected_hough_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="c1"># WHITE</span>
+
+    <span class="n">longest_lines_left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">left_longest_line</span><span class="p">)</span>  <span class="c1"># ORANGE </span>
+    <span class="n">longest_lines_right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">right_longest_line</span><span class="p">)</span> <span class="c1"># ORANGE </span>
+    
+    <span class="c1"># draw a blank black image</span>
+    <span class="n">image_lines</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    
+    <span class="c1"># draw color-coded HOUGH lines</span>
+    <span class="c1"># Most of the time I do not want to draw all of the WHITE lines   </span>
+    <span class="c1">#draw_lines(image_lines, lines, color=WHITE, thickness=2)</span>
+    <span class="n">draw_lines</span><span class="p">(</span><span class="n">image_lines</span><span class="p">,</span> <span class="n">relevant_hough_lines_left</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">RED</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">draw_lines</span><span class="p">(</span><span class="n">image_lines</span><span class="p">,</span> <span class="n">relevant_hough_lines_right</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">GREEN</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image_lines</span>
+
+
+<span class="c1"># TEST  </span>
+<span class="c1">#image_hough_lines = hough_lines(image_mask)</span>
+<span class="c1">#plt.imshow(image_hough_lines)</span>
+<span class="c1">#plt.show()</span>
+
+
+<span class="c1">#image_hough_lines = hough_lines(image_mask, rho=2, theta=np.pi/180, threshold=25, min_line_len=25, max_line_gap=20)</span>
+<span class="c1">#plt.imshow(image_hough_lines)</span>
+<span class="c1">#plt.show()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">preprocessing_pipline</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">final_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">should_plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    final_size=256 AlexNet and GoogLeNet</span>
+<span class="sd">    final_size=224 VGG-16</span>
+<span class="sd">    final_size=64  is OPTIMAL if I was writing CDNN from scratch</span>
+<span class="sd">    final_size=32  images are fuzzy, AlexNet (street signs CDNN)</span>
+<span class="sd">    final_size=28  images are very fuzzy, LeNet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    
+        
+    <span class="n">image</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="n">crop_image</span><span class="p">(</span><span class="n">image</span><span class="p">))</span> <span class="c1"># &#39;numpy.ndarray&#39; object has no attribute &#39;crop&#39;</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;my image&quot;</span><span class="p">)</span>
+
+    <span class="c1">#image = region_of_interest(image, mask_vertices(image))</span>
+    <span class="c1">#print_image(comment=&quot;grayscale&quot;, image, should_plot)</span>
+    
+    <span class="n">image</span> <span class="o">=</span> <span class="n">grayscale</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;grayscale&quot;</span><span class="p">)</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">gaussian_blur</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;gaussian_blur&quot;</span><span class="p">)</span>
+    
+    <span class="n">image</span> <span class="o">=</span> <span class="n">canny</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">low_threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">high_threshold</span><span class="o">=</span><span class="mi">190</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;canny&quot;</span><span class="p">)</span>
+    
+    <span class="n">image</span> <span class="o">=</span> <span class="n">hough_lines</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;hough_lines&quot;</span><span class="p">)</span>
+    
+    <span class="n">image</span> <span class="o">=</span> <span class="n">resize_image_maintain_ratio</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">new_size</span><span class="o">=</span><span class="n">final_size</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;resize_image_maintain_ratio&quot;</span><span class="p">)</span>
+
+        
+    <span class="n">image</span> <span class="o">=</span> <span class="n">normalize_grayscale</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">print_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">should_plot</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;normalize_grayscale&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image</span>
 </pre></div>
 
 </div>
