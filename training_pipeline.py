@@ -94,21 +94,27 @@ for image_name in image_names:
 print(image_paths[1]) 
 
 
-# In[10]:
+# # Read images and display a sample
+# 
+# - make sure they are in the right color representation
+# - use Generator
 
-import matplotlib.pyplot as plt
-import numpy as np
-from DataHelper import read_image
+# In[8]:
 
-training_features = np.array([ read_image(path) for path in image_paths] )
+#import numpy as np 
+from ImageHelper import read_image_array
+training_features = [read_image_array(path) for path in image_paths]
 
-print ("training_features matrix shape", training_features.shape)
+print ("training_features count", len(training_features) )
 
 sample_image = training_features[2]
+print ("sample_image  ", sample_image.shape)
+
+import matplotlib.pyplot as plt
 plt.imshow(sample_image) # cmap='gray' , cmap='rainbow'
 plt.show()
 
-print(sample_image[0][0:15])
+#print(sample_image[0][0:15])
 
 
 # In[ ]:
