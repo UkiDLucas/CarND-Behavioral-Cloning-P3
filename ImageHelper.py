@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 import argparse
 import base64
@@ -32,7 +32,7 @@ import random
 import scipy.misc
 
 
-# In[ ]:
+# In[2]:
 
 # Define RGB colors used in the code
 RED = color=[255, 0, 0]
@@ -46,7 +46,7 @@ ORANGE = color=[255, 128, 0]
 
 # # Read image from the disk
 
-# In[ ]:
+# In[3]:
 
 def read_image_binary(image_path):
     """
@@ -68,7 +68,7 @@ def read_image_array(image_path):
     return image
 
 
-# In[ ]:
+# In[4]:
 
 import PIL
 import numpy
@@ -104,7 +104,7 @@ def resize_image_maintain_ratio(numpy_array_image, new_size):
     return array(image)
 
 
-# In[ ]:
+# In[5]:
 
 def mask_vertices(image):
     """
@@ -143,7 +143,7 @@ def mask_vertices(image):
     return vertices
 
 
-# In[ ]:
+# In[6]:
 
 def region_of_interest(img, vertices):
     """
@@ -170,7 +170,7 @@ def region_of_interest(img, vertices):
     return masked_image
 
 
-# In[ ]:
+# In[7]:
 
 def canny(image, low_threshold=50, high_threshold=250): 
     # homework low_threshold=20, high_threshold=130
@@ -178,14 +178,14 @@ def canny(image, low_threshold=50, high_threshold=250):
     return cv2.Canny(image, low_threshold, high_threshold)
 
 
-# In[ ]:
+# In[8]:
 
 def gaussian_blur(image, kernel_size=5): # 5 
     """Applies a Gaussian Noise kernel"""
     return cv2.GaussianBlur(image, (kernel_size, kernel_size), 0)
 
 
-# In[ ]:
+# In[9]:
 
 import cv2
 def grayscale(image):
@@ -198,7 +198,7 @@ def grayscale(image):
     # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
-# In[ ]:
+# In[10]:
 
 def crop_image(image):
     left = 0
@@ -209,7 +209,7 @@ def crop_image(image):
     return image
 
 
-# In[ ]:
+# In[11]:
 
 def print_image(image, should_plot, comment="my image"):
    if should_plot:
@@ -218,7 +218,7 @@ def print_image(image, should_plot, comment="my image"):
        plt.show()
 
 
-# In[ ]:
+# In[12]:
 
 def normalize_grayscale(image_data):
     a = -0.5
@@ -228,7 +228,7 @@ def normalize_grayscale(image_data):
     return a + ( ( (image_data - grayscale_min)*(b - a) )/( grayscale_max - grayscale_min ) )
 
 
-# In[ ]:
+# In[13]:
 
 def round_int(x):
     if x == float("inf") or x == float("-inf"):
@@ -243,7 +243,7 @@ def test_round_int():
     print(round_int(float("-inf")))
 
 
-# In[ ]:
+# In[14]:
 
 def calc_x(slope, y, y_intercept):
     
@@ -265,13 +265,13 @@ def calc_x(slope, y, y_intercept):
     return   result
 
 
-# In[ ]:
+# In[15]:
 
 def calc_y_intercept(slope, x, y):
     return y - (x * slope)
 
 
-# In[ ]:
+# In[16]:
 
 def calc_slope(x1, y1, x2, y2):        
     rise = y2 - y1
@@ -290,7 +290,7 @@ def calc_slope(x1, y1, x2, y2):
 #print(calc_slope(1, 2, 1, 3))
 
 
-# In[ ]:
+# In[17]:
 
 def side(image, line):
     """
@@ -324,7 +324,7 @@ def side(image, line):
             return "irrelevant" # the line extends off screen, to be tested
 
 
-# In[ ]:
+# In[18]:
 
 def arrangeLineCoordinates(line):
     """
@@ -361,7 +361,7 @@ def arrangeLineCoordinates(line):
     return line
 
 
-# In[ ]:
+# In[19]:
 
 def draw_lines(image, lines, color=WHITE, thickness=1):
     """   
@@ -384,7 +384,7 @@ def draw_lines(image, lines, color=WHITE, thickness=1):
                 cv2.line(image, (0, 0), (0, 0), color, thickness)
 
 
-# In[ ]:
+# In[20]:
 
 def hough_lines(image, rho=2, theta=np.pi/180, threshold=20, min_line_len=10, max_line_gap=5):
     """
@@ -465,7 +465,7 @@ def hough_lines(image, rho=2, theta=np.pi/180, threshold=20, min_line_len=10, ma
 #plt.show()
 
 
-# In[ ]:
+# In[21]:
 
 def preprocessing_pipline(image, final_size=512, should_plot=False):
     """
