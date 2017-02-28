@@ -5,7 +5,7 @@
 # 
 # 
 
-# ## Set parameters
+# ## Set parameters that will control the execution
 
 # In[1]:
 
@@ -18,46 +18,11 @@ nb_epoch = 40
 model_to_continue_training = "previous_model.h5"
 previous_trained_epochs = 30
 
-import os
-from os.path import normpath, join
 
-import scipy
-from scipy import ndimage
-from scipy.misc import imresize
-
-import sklearn
-from sklearn.model_selection import train_test_split
-
-import keras
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
-from keras.models import model_from_json, Sequential
-from keras.utils import np_utils
-from keras.layers.advanced_activations import ELU as elu
-from keras.layers import Flatten, ZeroPadding2D, MaxPooling2D, Activation, Dropout, Convolution2D
-from keras.layers import Dense, Input, Activation, BatchNormalization, Lambda, ELU
-from keras.optimizers import Adam
-from keras.backend import ndim
-# from keras.utils.visualize_util import plot
-
-import csv
-import cv2
-import math
-import json
-import pickle
-import random
-import collections
-import numpy as np
-
-#import pydot
-
-import tensorflow as tf
-from tensorflow.python.framework.ops import convert_to_tensor
-tf.python.control_flow_ops = tf
-# 
+# # Allocate only a fraction of memory to TensorFlow GPU process
 
 # In[3]:
 
-#### Allocate only a fraction of memory to TensorFlow GPU process
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6) # try range from 0.333 ot .9
@@ -71,6 +36,41 @@ def get_available_CPU_GPU():
     return [x.name for x in devices ]
 
 print(get_available_CPU_GPU())
+
+
+# # Fetch data from CSV file
+
+# In[7]:
+
+from  DataHelper import read_csv
+csv_path = data_dir + driving_data_csv
+print("csv_path", csv_path)
+headers, data = read_csv(data_dir + driving_data_csv)
+
+
+# # Split data into training, testing and validation sets
+
+# In[9]:
+
+from DataHelper import split_random
+training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
+
+print("training", training.shape)
+print("testing", testing.shape)
+print("validation", validation.shape)
+
+
+# # Fetch and visualize training steering angles
+# 
+# I would like to train a car on the set that has a nice bell cureve distribution of values:
+# - I can drive the car on the track backwards
+# - I can flip each image (and value)
+
+# In[11]:
+
+from DataHelper import plot_histogram, get_steering_values, find_nearest
+steering_angles = get_steering_values(training)
+plot_histogram("steering values", steering_angles, change_step=0.01)
 
 
 # In[ ]:

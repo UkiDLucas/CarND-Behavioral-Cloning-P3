@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>model</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>DataHelper</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11773,37 +11773,17 @@ div#notebook {
   <div tabindex="-1" id="notebook" class="border-box-sizing">
     <div class="container" id="notebook-container">
 
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Train-Model">Train Model<a class="anchor-link" href="#Train-Model">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Set-parameters-that-will-control-the-execution">Set parameters that will control the execution<a class="anchor-link" href="#Set-parameters-that-will-control-the-execution">&#182;</a></h2>
-</div>
-</div>
-</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/CarND_behavioral_cloning/r_001/&quot;</span>
-<span class="n">driving_data_csv</span> <span class="o">=</span> <span class="s2">&quot;driving_log_normalized.csv&quot;</span>
-<span class="n">model_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/MODELS/&quot;</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;model_p3_14x64x3_&quot;</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
-<span class="n">nb_epoch</span> <span class="o">=</span> <span class="mi">40</span> 
-<span class="n">model_to_continue_training</span> <span class="o">=</span> <span class="s2">&quot;previous_model.h5&quot;</span>
-<span class="n">previous_trained_epochs</span> <span class="o">=</span> <span class="mi">30</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Helper methods are very specific to p3.</span>
+<span class="sd">Created by Uki D. Lucas on Feb. 4, 2017</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">should_run_tests</span> <span class="o">=</span> <span class="kc">False</span>
 </pre></div>
 
 </div>
@@ -11811,118 +11791,322 @@ div#notebook {
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Allocate-only-a-fraction-of-memory-to-TensorFlow-GPU-process">Allocate only a fraction of memory to TensorFlow GPU process<a class="anchor-link" href="#Allocate-only-a-fraction-of-memory-to-TensorFlow-GPU-process">&#182;</a></h1>
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">predict_class</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">classes</span><span class="p">):</span>
+    <span class="n">percentages</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># reverse sort by value, return indexes</span>
+    <span class="n">sorted_indexes</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">percentages</span><span class="p">)</span><span class="o">.</span><span class="n">argsort</span><span class="p">()</span>
+ 
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">sorted_indexes</span><span class="p">[:</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted class:&quot;</span><span class="p">,</span> <span class="n">classes</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> 
+              <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">percentages</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span> 
+    
+    <span class="c1"># right now we will return top prediction</span>
+    <span class="n">predicted_class</span> <span class="o">=</span> <span class="n">classes</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="n">predicted_class</span>
+</pre></div>
+
 </div>
 </div>
+</div>
+
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="n">gpu_options</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">GPUOptions</span><span class="p">(</span><span class="n">per_process_gpu_memory_fraction</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span> <span class="c1"># try range from 0.333 ot .9</span>
-<span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">(</span><span class="n">log_device_placement</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gpu_options</span><span class="o">=</span><span class="n">gpu_options</span><span class="p">))</span>
-
-<span class="c1">#### Show available CPU and GPU(s)</span>
-<span class="kn">from</span> <span class="nn">tensorflow.python.client</span> <span class="k">import</span> <span class="n">device_lib</span>
-<span class="k">def</span> <span class="nf">get_available_CPU_GPU</span><span class="p">():</span>
-    <span class="n">devices</span> <span class="o">=</span> <span class="n">device_lib</span><span class="o">.</span><span class="n">list_local_devices</span><span class="p">()</span>
-    <span class="c1">#return [x.name for x in devices if x.device_type == &#39;CPU&#39;]</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">devices</span> <span class="p">]</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">get_available_CPU_GPU</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># http://localhost:8888/notebooks/ImageHelper.ipynb#Read-image-from-the-disk</span>
+<span class="k">def</span> <span class="nf">read_image</span><span class="p">(</span><span class="n">image_path</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">cv2</span>
+    <span class="c1"># cv2.IMREAD_COLOR </span>
+    <span class="c1"># cv2.COLOR_BGR2GRAY </span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+    <span class="c1">#print(&quot;image shape&quot;, image.shape)</span>
+    <span class="c1">#plt.imshow(image, cmap=&#39;gray&#39;)</span>
+    <span class="c1">#plt.show()</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>[&#39;/cpu:0&#39;, &#39;/gpu:0&#39;]
-</pre>
 </div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Fetch-data-from-CSV-file">Fetch data from CSV file<a class="anchor-link" href="#Fetch-data-from-CSV-file">&#182;</a></h1>
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># TODO implement batch_from, batch_to - I did not need it for 8037 rows</span>
+<span class="c1"># TODO implement has_header_row</span>
+<span class="k">def</span> <span class="nf">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Usage:</span>
+<span class="sd">    headers, data = read_csv(file_path)</span>
+<span class="sd">    Parameter: </span>
+<span class="sd">    - file_path: can be relative path &quot;../../../DATA/stuff.csv&quot;</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - headers: array of strings e.g. [&#39;steering&#39;, &#39;throttle&#39;, &#39;brake&#39;, &#39;speed&#39;]</span>
+<span class="sd">    - data: array of strings, you have to convert values to int, float yourself</span>
+<span class="sd">   test_read_csv()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">csv</span>
+    <span class="c1"># Opening spreadsheet to read in TEXT mode: &#39;rt&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+        <span class="c1"># Most common format of CSV, TODO improve</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">quotechar</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> 
+        <span class="n">row_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">payload</span><span class="p">:</span>
+            <span class="n">row_counter</span> <span class="o">=</span> <span class="n">row_counter</span> <span class="o">+</span> <span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="n">row_counter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">headers</span> <span class="o">=</span> <span class="n">row</span>
+                <span class="c1"># print (type(row))</span>
+                <span class="c1"># print ( row)</span>
+                <span class="c1"># print (&#39;\t &#39;.join(row))</span>
+            <span class="k">elif</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">row_counter</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="c1"># print (type(row))</span>
+                <span class="c1"># print ( row)</span>
+                <span class="c1"># print (&#39;\t &#39;.join(row))</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of imported CSV rows:&quot;</span><span class="p">,</span> <span class="n">row_counter</span><span class="p">)</span>
+        <span class="c1"># I am returning data as numpy array instead of list</span>
+        <span class="c1"># because it is handier to use it.</span>
+        <span class="k">return</span> <span class="n">headers</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    
+    
+<span class="k">def</span> <span class="nf">test_read_csv</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This test is specific to Uki&#39;s enviroment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;../../../DATA/behavioral_cloning_data/&quot;</span>
+    <span class="n">headers</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;driving_log.csv&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;headers </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">headers</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3rd row of data </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="n">should_run_tests</span><span class="p">:</span>    
+    <span class="n">test_read_csv</span><span class="p">()</span>
+</pre></div>
+
 </div>
 </div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">create_steering_classes</span><span class="p">(</span><span class="n">number_of_classes</span> <span class="o">=</span> <span class="mi">41</span><span class="p">):</span>
+    <span class="n">steering_classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">number_of_classes</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> 
+    <span class="n">steering_classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">steering_classes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">steering_classes</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># snapping actual values to given labels</span>
+
+<span class="k">def</span> <span class="nf">find_nearest</span><span class="p">(</span><span class="n">array</span><span class="p">,</span><span class="n">value</span><span class="p">):</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="o">-</span><span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">should_run_tests</span><span class="p">:</span>  
+    <span class="k">assert</span> <span class="p">(</span><span class="n">find_nearest</span><span class="p">(</span><span class="n">steering_labels</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.951</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mf">1.00</span><span class="p">),</span><span class="s2">&quot;method find_nearest() has problem&quot;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span>  <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">read_csv</span>
-<span class="n">csv_path</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="n">driving_data_csv</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;csv_path&quot;</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">)</span>
-<span class="n">headers</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">data_dir</span> <span class="o">+</span> <span class="n">driving_data_csv</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+    
+<span class="k">def</span> <span class="nf">split_random</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">percent_train</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">percent_test</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits matrix data into randomly ordered sets </span>
+<span class="sd">    grouped by provided percentages.</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+<span class="sd">    rows = 100</span>
+<span class="sd">    columns = 2</span>
+<span class="sd">    matrix = np.random.rand(rows, columns)</span>
+<span class="sd">    training, testing, validation = \</span>
+<span class="sd">    split_random(matrix, percent_train=80, percent_test=10)</span>
+<span class="sd">    </span>
+<span class="sd">    percent_validation 10</span>
+<span class="sd">    training (80, 2)</span>
+<span class="sd">    testing (10, 2)</span>
+<span class="sd">    validation (10, 2)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - training_data: percentage_train e.g. 70%</span>
+<span class="sd">    - testing_data: percent_test e.g. 15%</span>
+<span class="sd">    - validation_data: reminder from 100% e.g. 15%</span>
+<span class="sd">    Created by Uki D. Lucas on Feb. 4, 2017</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#print(matrix)  </span>
+    <span class="n">row_count</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    
+    <span class="n">end_training</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">row_count</span><span class="o">*</span><span class="n">percent_train</span><span class="o">/</span><span class="mi">100</span><span class="p">))</span>    
+    <span class="n">end_testing</span> <span class="o">=</span> <span class="n">end_training</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">row_count</span> <span class="o">*</span> <span class="n">percent_test</span><span class="o">/</span><span class="mi">100</span><span class="p">)))</span>
+    
+    <span class="n">percent_validation</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="n">percent_train</span> <span class="o">-</span> <span class="n">percent_test</span>
+    
+    <span class="n">training</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[:</span><span class="n">end_training</span><span class="p">]</span>
+    <span class="n">testing</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">validation</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">if</span> <span class="n">percent_validation</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Make sure that the provided sum of &quot;</span> <span class="o">+</span> \
+        <span class="s2">&quot;training and testing percentages is equal, &quot;</span> <span class="o">+</span> \
+        <span class="s2">&quot;or less than 100%.&quot;</span><span class="p">)</span>
+        
+        <span class="n">testing</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">end_training</span><span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;percent_validation&quot;</span><span class="p">,</span> <span class="n">percent_validation</span><span class="p">)</span>
+        
+        <span class="n">testing</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">end_training</span><span class="p">:</span><span class="n">end_testing</span><span class="p">]</span>
+        <span class="n">validation</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">end_testing</span><span class="p">:]</span>
+    
+    <span class="k">return</span> <span class="n">training</span><span class="p">,</span> <span class="n">testing</span><span class="p">,</span> <span class="n">validation</span>
+
+<span class="c1"># TEST:</span>
+
+<span class="k">def</span> <span class="nf">test_split_random</span><span class="p">():</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="mi">8037</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="p">)</span>
+    <span class="n">training</span><span class="p">,</span> <span class="n">testing</span><span class="p">,</span> <span class="n">validation</span> <span class="o">=</span> <span class="n">split_random</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">percent_train</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">percent_test</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> 
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training&quot;</span><span class="p">,</span><span class="n">training</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">,</span><span class="n">testing</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;validation&quot;</span><span class="p">,</span><span class="n">validation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span><span class="n">training</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">testing</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="c1">#print(split_random.__doc__)</span>
+<span class="k">if</span> <span class="n">should_run_tests</span><span class="p">:</span>  
+    <span class="n">test_split_random</span><span class="p">()</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>csv_path ../_DATA/CarND_behavioral_cloning/r_001/driving_log_normalized.csv
-Number of imported CSV rows: 11723
-</pre>
 </div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Split-data-into-training,-testing-and-validation-sets">Split data into training, testing and validation sets<a class="anchor-link" href="#Split-data-into-training,-testing-and-validation-sets">&#182;</a></h1>
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_image_center_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_image_left_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_image_right_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_steering_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_throttle_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_brake_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_speed_values</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
 </div>
 </div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">split_random</span>
-<span class="n">training</span><span class="p">,</span> <span class="n">testing</span><span class="p">,</span> <span class="n">validation</span> <span class="o">=</span> <span class="n">split_random</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">percent_train</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span> <span class="n">percent_test</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># for custom metrics</span>
+<span class="kn">import</span> <span class="nn">keras.backend</span> <span class="k">as</span> <span class="nn">K</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="n">training</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">,</span> <span class="n">testing</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;validation&quot;</span><span class="p">,</span> <span class="n">validation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">mean_pred</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">K</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">false_rates</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="n">false_neg</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="n">false_pos</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;false_neg&#39;</span><span class="p">:</span> <span class="n">false_neg</span><span class="p">,</span>
+        <span class="s1">&#39;false_pos&#39;</span><span class="p">:</span> <span class="n">false_pos</span><span class="p">,</span>
+    <span class="p">}</span>
 </pre></div>
 
 </div>
@@ -11936,11 +12120,8 @@ Number of imported CSV rows: 11723
 <div class="output_area">
 <div class="prompt"></div>
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>percent_validation 10
-training (8792, 7)
-testing (1759, 7)
-validation (1171, 7)
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Using TensorFlow backend.
 </pre>
 </div>
 </div>
@@ -11949,212 +12130,205 @@ validation (1171, 7)
 </div>
 
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Fetch-and-visualize-training-steering-angles">Fetch and visualize training steering angles<a class="anchor-link" href="#Fetch-and-visualize-training-steering-angles">&#182;</a></h1><p>I would like to train a car on the set that has a nice bell cureve distribution of values:</p>
-<ul>
-<li>I can drive the car on the track backwards</li>
-<li>I can flip each image (and value)</li>
-</ul>
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
 
 </div>
 </div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">sort_unique_floats</span><span class="p">(</span><span class="n">array_x</span><span class="p">):</span>
+    <span class="c1"># assure that the array is numpy and numerical</span>
+    <span class="c1">#array_x = array_x.astype(np.float)</span>
+    
+    <span class="c1"># get unique values, a.k.a. set of values</span>
+    <span class="n">labels_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">array_x</span><span class="p">)</span>
+    <span class="c1">#print(&quot;labels_set\n&quot;, labels_set)</span>
+    
+    <span class="c1"># set is not sorted, so convert it to a numpy array</span>
+    <span class="n">unique_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">labels_set</span><span class="p">))</span>
+    <span class="c1">#print(&quot;unique_labels\n&quot;, unique_labels.shape, unique_labels)</span>
+    
+    <span class="n">sorted_unique_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">)</span>
+    <span class="c1">#print(&quot;sorted_unique_labels\n&quot;, sorted_unique_labels.shape, sorted_unique_labels)</span>
+    <span class="k">return</span> <span class="n">sorted_unique_labels</span>
+    
+<span class="c1"># TEST   </span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">plot_histogram</span><span class="p">,</span> <span class="n">get_steering_values</span><span class="p">,</span> <span class="n">find_nearest</span>
-<span class="n">steering_angles</span> <span class="o">=</span> <span class="n">get_steering_values</span><span class="p">(</span><span class="n">training</span><span class="p">)</span>
-<span class="n">plot_histogram</span><span class="p">(</span><span class="s2">&quot;steering values&quot;</span><span class="p">,</span> <span class="n">steering_angles</span><span class="p">,</span> <span class="n">change_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">locate_one_hot_position</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">,</span> <span class="n">actual_label</span><span class="p">):</span>
+    
+    <span class="c1">#print(&quot;actual_label&quot;, actual_label, type(actual_label))</span>
+    <span class="n">matched_label</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span> <span class="n">find_nearest</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">,</span> <span class="n">actual_label</span><span class="p">))</span>
+    
+    <span class="c1">#print(&quot;matched_label&quot;, matched_label, type(matched_label))</span>
+    <span class="n">found_at</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">defined_classes</span> <span class="o">==</span> <span class="n">matched_label</span><span class="p">)</span>
+    
+    <span class="c1"># (array([10]),) &lt;class &#39;tuple&#39;&gt;</span>
+    <span class="n">found_at</span> <span class="o">=</span> <span class="n">found_at</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># first element of first vector</span>
+    <span class="c1">#print(&quot;found_at&quot;, found_at, type(found_at) )</span>
+    <span class="c1"># returns array of locations</span>
+    <span class="k">return</span> <span class="n">found_at</span>
+
+<span class="k">def</span> <span class="nf">encode_one_hot</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">,</span> <span class="n">sample_labels</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates one hot encoded vector from a list {1D vector (None,)} containing training labels.</span>
+<span class="sd">    - find all unique labels</span>
+<span class="sd">    - count all unique labels</span>
+<span class="sd">    - create a zero filed array, size equal to count of all unique labels</span>
+<span class="sd">    - order the unique values (small to large)</span>
+<span class="sd">    - create empty output matrix</span>
+<span class="sd">    - for each sample&#39;s label create zero vector and set one in position of that label</span>
+<span class="sd">    Created by Uki D. Lucas</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defined_classes</span> <span class="o">=</span> <span class="n">sort_unique_floats</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">)</span>
+    
+    <span class="c1"># possible float rounding errors</span>
+    <span class="n">defined_classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round_</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;defined_classes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">defined_classes</span><span class="p">)</span>
+    
+    <span class="n">class_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;class_count:&quot;</span><span class="p">,</span> <span class="n">class_count</span><span class="p">)</span>
+    
+    <span class="n">sample_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_labels</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sample_count:&quot;</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">)</span>
+    
+    <span class="n">one_hot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">sample_count</span><span class="p">,</span> <span class="n">class_count</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+     
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sample_count</span><span class="p">):</span> 
+        <span class="n">actual_label</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sample_labels</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="c1"># find first index of actual_label</span>
+        <span class="n">found_at</span> <span class="o">=</span> <span class="n">locate_one_hot_position</span><span class="p">(</span><span class="n">defined_classes</span><span class="p">,</span> <span class="n">actual_label</span><span class="p">)</span>
+        <span class="c1">#print(&quot;found&quot;, index, type(index) )</span>
+        <span class="n">one_hot</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="n">found_at</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1">#print(&quot;one_hot[index]&quot;, one_hot[index])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;one_hot examples </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">one_hot</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;one_hot shape&quot;</span><span class="p">,</span> <span class="n">one_hot</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> 
+    <span class="k">return</span> <span class="n">one_hot</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">show_layers</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">)):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;) &quot;</span><span class="p">,</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t\t</span><span class="s2"> is trainable: &quot;</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">trainable</span><span class="p">)</span>
+        <span class="c1">#layer.trainable = False</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+</pre></div>
 
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>min_value -0.842346
-max_value 0.965902
-spread 1.80825
-recommended number of classes 181
-</pre>
 </div>
 </div>
-
-<div class="output_area">
-<div class="prompt"></div>
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-gg==
-"
->
 </div>
 
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1">#import random</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
+<span class="k">def</span> <span class="nf">margin</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span><span class="o">*</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">plot_histogram</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">change_step</span><span class="p">):</span>
+    
+    <span class="n">min_value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;min_value&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="p">)</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;max_value&quot;</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span>
+    
+    <span class="n">spread</span> <span class="o">=</span> <span class="n">max_value</span><span class="o">-</span><span class="n">min_value</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;spread&quot;</span><span class="p">,</span> <span class="n">spread</span><span class="p">)</span>
+    <span class="n">recommended_bins</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">spread</span><span class="o">/</span><span class="n">change_step</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;recommended number of classes&quot;</span><span class="p">,</span> <span class="n">recommended_bins</span><span class="p">)</span>
+    
+    <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">values</span><span class="p">)),</span> 
+                       <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="p">)),</span>
+                       <span class="n">recommended_bins</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span>
+        <span class="n">min_value</span> <span class="o">-</span> <span class="n">margin</span><span class="p">(</span><span class="n">min_value</span><span class="p">),</span> 
+        <span class="n">max_value</span> <span class="o">+</span> <span class="n">margin</span><span class="p">(</span><span class="n">max_value</span><span class="p">)])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Distribution of &#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;values&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;occurance&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># RESIZE it nicely for Jupyter Notebook (width = 10)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;test2png.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">margins</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">plot_steering_values</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="s1">&#39;b.&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Distribution of steering value classes.&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;class number&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;steering value&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># RESIZE it nicely for Jupyter Notebook (width = 10)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;test2png.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">margins</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+</div>
 </div>
 </div>
 
