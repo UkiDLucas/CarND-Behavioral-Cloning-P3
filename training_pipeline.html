@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" />
-<title>model</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>training_pipeline</title><script src="https://unpkg.com/jupyter-js-widgets@2.0.*/dist/embed.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <style type="text/css">
@@ -11796,9 +11796,9 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/CarND/p3_behavioral_cloning/r_001&quot;</span>
-<span class="n">image_dir</span> <span class="o">=</span> <span class="s2">&quot;IMG&quot;</span>
-<span class="n">driving_data_csv</span> <span class="o">=</span> <span class="s2">&quot;driving_log.csv&quot;</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/CarND/p3_behavioral_cloning/r_001/&quot;</span>
+<span class="n">image_dir</span> <span class="o">=</span> <span class="s2">&quot;IMG/&quot;</span>
+<span class="n">driving_data_csv</span> <span class="o">=</span> <span class="s2">&quot;driving_log_normalized.csv&quot;</span>
 <span class="n">model_dir</span> <span class="o">=</span> <span class="s2">&quot;../_DATA/MODELS/&quot;</span>
 <span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;model_p3_14x64x3_&quot;</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
@@ -11903,31 +11903,9 @@ div#notebook {
 <div class="prompt"></div>
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>csv_path ../_DATA/CarND/p3_behavioral_cloning/r_001driving_log.csv
+<pre>csv_path ../_DATA/CarND/p3_behavioral_cloning/r_001/driving_log_normalized.csv
+Number of imported CSV rows: 11723
 </pre>
-</div>
-</div>
-
-<div class="output_area">
-<div class="prompt"></div>
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-3-7bab1b60d756&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> csv_path <span class="ansi-blue-fg">=</span> data_dir <span class="ansi-blue-fg">+</span> driving_data_csv
-<span class="ansi-green-intense-fg ansi-bold">      3</span> print<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;csv_path&#34;</span><span class="ansi-blue-fg">,</span> csv_path<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">----&gt; 4</span><span class="ansi-red-fg"> </span>headers<span class="ansi-blue-fg">,</span> data <span class="ansi-blue-fg">=</span> read_csv<span class="ansi-blue-fg">(</span>data_dir <span class="ansi-blue-fg">+</span> driving_data_csv<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/Users/ukilucas/dev/CarND-p3-behavioral_cloning-UkiDLucas/DataHelper.py</span> in <span class="ansi-cyan-fg">read_csv</span><span class="ansi-blue-fg">(file_path)</span>
-<span class="ansi-green-intense-fg ansi-bold">     62</span>     <span class="ansi-green-fg">import</span> csv
-<span class="ansi-green-intense-fg ansi-bold">     63</span>     <span class="ansi-red-fg"># Opening spreadsheet to read in TEXT mode: &#39;rt&#39;</span>
-<span class="ansi-green-fg">---&gt; 64</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">with</span> open<span class="ansi-blue-fg">(</span>file_path<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;rt&#39;</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> csvfile<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     65</span>         <span class="ansi-red-fg"># Most common format of CSV, TODO improve</span>
-<span class="ansi-green-intense-fg ansi-bold">     66</span>         payload <span class="ansi-blue-fg">=</span> csv<span class="ansi-blue-fg">.</span>reader<span class="ansi-blue-fg">(</span>csvfile<span class="ansi-blue-fg">,</span> delimiter<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;,&#39;</span><span class="ansi-blue-fg">,</span> quotechar<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;&#34;&#39;</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;../_DATA/CarND/p3_behavioral_cloning/r_001driving_log.csv&#39;</pre>
 </div>
 </div>
 
@@ -11946,7 +11924,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">split_random</span>
@@ -11961,13 +11939,32 @@ div#notebook {
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>percent_validation 10
+training (8792, 7)
+testing (1759, 7)
+validation (1171, 7)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Fetch-and-visualize-training-steering-angles">Fetch and visualize training steering angles<a class="anchor-link" href="#Fetch-and-visualize-training-steering-angles">&#182;</a></h1><p>I would like to train a car on the set that has a nice bell cureve distribution of values:</p>
+<h1 id="Fetch-and-visualize-training-steering-angles">Fetch and visualize training steering angles<a class="anchor-link" href="#Fetch-and-visualize-training-steering-angles">&#182;</a></h1><p>I would like to train a car on the set that has a nice bell curve distribution of values:</p>
 <ul>
 <li>I can drive the car on the track backwards</li>
 <li>I can flip each image (and value)</li>
@@ -11978,7 +11975,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">plot_histogram</span><span class="p">,</span> <span class="n">get_steering_values</span><span class="p">,</span> <span class="n">find_nearest</span>
@@ -11987,6 +11984,187 @@ div#notebook {
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>min_value -0.842961
+max_value 0.965902
+spread 1.80886
+recommended number of classes 181
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+<div class="prompt"></div>
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+TkSuQmCC
+"
+>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -12002,7 +12180,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">DataHelper</span> <span class="k">import</span> <span class="n">get_image_center_values</span> 
@@ -12012,6 +12190,23 @@ div#notebook {
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>image count 8792
+center_2017_01_21_00_27_34_405.jpg
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -12027,7 +12222,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">image_paths</span> <span class="o">=</span> <span class="p">[]</span>
@@ -12037,6 +12232,22 @@ div#notebook {
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>../_DATA/CarND/p3_behavioral_cloning/r_001/IMG/center_2017_01_21_00_27_34_405.jpg
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
