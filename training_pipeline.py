@@ -117,6 +117,56 @@ plt.show()
 #print(sample_image[0][0:15])
 
 
+# # Import Keras (layer above TensorFlow)
+# 
+# https://keras.io/layers/convolutional/
+
+# In[12]:
+
+import keras.backend as K
+from keras.models import Sequential
+from keras.layers import ELU, InputLayer, Input
+from keras.layers.core import Flatten, Dense, Dropout, Activation, Lambda
+
+from keras.activations import relu, softmax
+from keras.optimizers import SGD
+import cv2, numpy as np
+from DataHelper import mean_pred, false_rates
+
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Convolution1D
+
+
+# In[14]:
+
+# Build a Convolutional Neural Network
+
+
+# In[13]:
+
+model = Sequential()
+
+model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ,
+                        input_shape=(14, 64 ,3), dim_ordering='tf', name="conv2d_1_relu"))
+model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
+model.add(Convolution2D(64, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
+
+model.add(Flatten())
+
+#model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Dense(256, activation="relu", name="dense_1_relu")) #256
+model.add(Dropout(0.25, name="dropout_1_0.25"))
+model.add(Dense(256, activation="relu", name="dense_2_relu" )) #256
+
+# CLASSIFICATION
+model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
+
+# REGRESSION
+#model.add(Dense(1, activation='linear'))
+
+model.summary()
+
+
 # In[ ]:
 
 
