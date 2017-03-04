@@ -9,13 +9,15 @@
 
 # In[1]:
 
-data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_001/"
+data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
-driving_data_csv = "driving_log_normalized.csv"
+driving_data_csv = "driving_log.csv"
 model_dir = "../_DATA/MODELS/"
 model_name = "model_p3_14x64x3_"
-batch_size = 256
-nb_epoch = 40 
+batch_size = 32 #256
+nb_epoch = 3 
+
+should_retrain_existing_model = False
 model_to_continue_training = "previous_model.h5"
 previous_trained_epochs = 30
 
@@ -110,6 +112,7 @@ for path in image_paths:
     image_list.append(read_image_array(path))
 training_features = np.array(image_list) # numpy array, not just a list
 
+print ("image_paths[2]", image_paths[2] )
 print ("training_features count", len(training_features) )
 
 sample_image = training_features[2]
