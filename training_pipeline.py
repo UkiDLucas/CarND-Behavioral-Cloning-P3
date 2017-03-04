@@ -12,8 +12,6 @@
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log.csv"
-model_dir = "../_DATA/MODELS/"
-model_name = "model_p3_14x64x3_"
 batch_size = 32 #256
 nb_epoch = 3 
 
@@ -156,21 +154,21 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 
 model = Sequential()
 # sample_image   (160, 320, 3)
-model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ,
+model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu" ,
                         input_shape=(160, 320 ,3), dim_ordering='tf', name="conv2d_1_relu"))
-model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
-model.add(Convolution2D(64, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
+#model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
+#model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
 
 model.add(Flatten())
 
 #model.add(MaxPooling2D(pool_size=(2, 2)))
 
 model.add(Dense(256, activation="relu", name="dense_1_relu")) #256
-model.add(Dropout(0.25, name="dropout_1_0.25"))
-model.add(Dense(256, activation="relu", name="dense_2_relu" )) #256
+#model.add(Dropout(0.25, name="dropout_1_0.25"))
+#model.add(Dense(256, activation="relu", name="dense_2_relu" )) #256
 
 # CLASSIFICATION
-model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
+#model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
 
 # REGRESSION
 model.add(Dense(1, activation='linear'))
@@ -219,6 +217,130 @@ history = model.fit(training_features,
 # CLASSIFICATION
 #history = model.fit(training_features, 
 #y_one_hot, nb_epoch=nb_epoch, batch_size=batch_size, verbose=1, validation_split=0.2)
+
+
+# In[ ]:
+
+# list all data in history
+print(history.history.keys())
+
+training_accuracy = str( history.history['acc'][nb_epoch-1])
+print("training_accuracy", training_accuracy)
+
+training_error = str( history.history['loss'][nb_epoch-1])
+print("training_error", training_error)
+
+validation_accuracy = str( history.history['val_acc'][nb_epoch-1])
+print("validation_accuracy", validation_accuracy)
+
+validation_error = str( history.history['val_loss'][nb_epoch-1])
+print("validation_error", validation_error)
+
+
+# # Save the model
+
+# In[ ]:
+
+# creates a HDF5 file '___.h5'
+model.save(data_dir 
+           + "model_epoch_" + str(nb_epoch + previous_trained_epochs) 
+           + "_val_acc_" + str(validation_accuracy) 
+           + ".h5") 
+#del model  # deletes the existing model
+#model = load_model('my_model.h5')
+
+
+# # summarize history for accuracy
+
+# In[ ]:
+
+# summarize history for accuracy
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy (bigger better)')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['training accuracy', 'testing accuracy'], loc='lower right')
+plt.show()
+
+
+
+# # summarize history for loss
+
+# In[ ]:
+
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Validation error (smaller better)')
+plt.ylabel('error')
+plt.xlabel('epochs run')
+plt.legend(['training error(loss)', 'validation error (loss)'], loc='upper right')
+plt.show()
+
+
+# # Prediction
+
+# In[ ]:
+
+from keras.models import load_model
+
+model_path = model_dir + model_to_continue_training
+print(model_path)
+
+model = load_model(model_dir + model_to_continue_training) 
+model.summary()
+
+
+# In[ ]:
+
+image_name = "center_2016_12_01_13_32_43_659.jpg" # stering 0.05219137
+original_steering_angle = 0.05219137
+
+image_name = "center_2016_12_01_13_33_10_579.jpg" # 0.1287396
+original_steering_angle = 0.05219137
+
+image_name = "center_2017_01_21_01_10_33_504.jpg" # -0.8188741
+original_steering_angle = -0.8188741
+
+image_path =  data_dir + processed_images_dir + image_name
+print(image_path)
+image = read_image(image_path)
+print(image.shape)
+plt.imshow(image, cmap='gray')
+plt.show()
+
+
+# ## Run model.predict(image)
+
+# In[ ]:
+
+predictions = model.predict( image[None, :, :], batch_size=1, verbose=1)
+
+
+# # Extract top prediction
+
+# In[ ]:
+
+from DataHelper import predict_class
+
+predicted_class = predict_class(predictions, steering_classes)
+
+print("original steering angle \n", original_steering_angle)
+print("top_prediction \n", predicted_class )
+
+
+# # Plot predictions (peaks are top classes)
+
+# In[ ]:
+
+# summarize history for loss
+plt.plot(predictions[0])
+plt.title('predictions')
+plt.ylabel('y')
+plt.xlabel('x')
+plt.legend(['predictions'], loc='upper right')
+plt.show()
 
 
 # In[ ]:
