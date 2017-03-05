@@ -7,7 +7,7 @@
 
 # ## Set parameters that will control the execution
 
-# In[1]:
+# In[ ]:
 
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
@@ -16,13 +16,13 @@ batch_size = 32 #256
 nb_epoch = 3 
 
 should_retrain_existing_model = False
-model_to_continue_training = "previous_model.h5"
+saved_model = "model_epoch_33_val_acc_0.0.h5"
 previous_trained_epochs = 30
 
 
 # # Allocate only a fraction of memory to TensorFlow GPU process
 
-# In[2]:
+# In[ ]:
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
@@ -41,7 +41,7 @@ print(get_available_CPU_GPU())
 
 # # Fetch data from CSV file
 
-# In[3]:
+# In[ ]:
 
 from  DataHelper import read_csv
 csv_path = data_dir + driving_data_csv
@@ -51,7 +51,7 @@ headers, data = read_csv(data_dir + driving_data_csv)
 
 # # Split data into training, testing and validation sets
 
-# In[4]:
+# In[ ]:
 
 from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
@@ -67,7 +67,7 @@ print("validation", validation.shape)
 # - I can drive the car on the track backwards
 # - I can flip each image (and value)
 
-# In[5]:
+# In[ ]:
 
 from DataHelper import plot_histogram, get_steering_values, find_nearest
 steering_angles = get_steering_values(training)
@@ -76,7 +76,7 @@ plot_histogram("steering values", steering_angles, change_step=0.01)
 
 # # Extract image names
 
-# In[6]:
+# In[ ]:
 
 from DataHelper import get_image_center_values 
 image_names = get_image_center_values(training)
@@ -86,7 +86,7 @@ print(image_names[1])
 
 # # Create a list of image paths
 
-# In[7]:
+# In[ ]:
 
 image_paths = []
 for image_name in image_names: # [0:50]
@@ -99,7 +99,7 @@ print(image_paths[1])
 # - make sure they are in the right color representation
 # - use Generator
 
-# In[8]:
+# In[ ]:
 
 import numpy as np 
 from ImageHelper import read_image_array
@@ -127,7 +127,7 @@ plt.show()
 # 
 # https://keras.io/layers/convolutional/
 
-# In[9]:
+# In[ ]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -142,12 +142,12 @@ from DataHelper import mean_pred, false_rates
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Convolution1D
 
 
-# In[10]:
+# In[ ]:
 
 # Build a Convolutional Neural Network
 
 
-# In[11]:
+# In[ ]:
 
 # Expected to see 1 arrays but instead got the following list of 8792 arrays: [array([[[203, 156, 129],
 
@@ -156,14 +156,14 @@ model = Sequential()
 # sample_image   (160, 320, 3)
 model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu" ,
                         input_shape=(160, 320 ,3), dim_ordering='tf', name="conv2d_1_relu"))
-#model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
-#model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
+model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
+model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
 
 model.add(Flatten())
 
 #model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Dense(256, activation="relu", name="dense_1_relu")) #256
+#model.add(Dense(256, activation="relu", name="dense_1_relu")) #256
 #model.add(Dropout(0.25, name="dropout_1_0.25"))
 #model.add(Dense(256, activation="relu", name="dense_2_relu" )) #256
 
@@ -218,7 +218,67 @@ history = model.fit(training_features,
 #history = model.fit(training_features, 
 #y_one_hot, nb_epoch=nb_epoch, batch_size=batch_size, verbose=1, validation_split=0.2)
 
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 1638400)       0           conv2d_1_relu[0][0]              
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
+====================================================================================================
+Total params: 1,639,297
+Trainable params: 1,639,297
+Non-trainable params: 0
 
+training_features.shape 590
+Train on 472 samples, validate on 118 samples
+- MacBook Pro CPU 13s / epoch
+- MacBook Pro GPU 5s / epoch
+
+
+
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+conv2d_3_relu (Convolution2D)    (None, 160, 320, 32)  25632       conv2d_1_relu[0][0]              
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 1638400)       0           conv2d_3_relu[0][0]              
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
+====================================================================================================
+Total params: 1,664,929
+Trainable params: 1,664,929
+Non-trainable params: 0
+
+
+training_features.shape 590
+Train on 472 samples, validate on 118 samples
+- MacBook Pro CPU 114s / epoch
+- MacBook Pro GPU 29s / epoch (29%)
+
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+conv2d_2_relu (Convolution2D)    (None, 160, 320, 32)  9248        conv2d_1_relu[0][0]              
+____________________________________________________________________________________________________
+conv2d_3_relu (Convolution2D)    (None, 160, 320, 32)  25632       conv2d_2_relu[0][0]              
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 1638400)       0           conv2d_3_relu[0][0]              
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
+====================================================================================================
+Total params: 1,674,177
+Trainable params: 1,674,177
+Non-trainable params: 0
+
+Train on 472 samples, validate on 118 samples
+- MacBook Pro CPU 156s / epoch
+- MacBook Pro GPU ResourceExhaustedError
 # In[ ]:
 
 # list all data in history
@@ -285,25 +345,19 @@ plt.show()
 
 from keras.models import load_model
 
-model_path = model_dir + model_to_continue_training
+model_path = data_dir + saved_model
 print(model_path)
 
-model = load_model(model_dir + model_to_continue_training) 
+model = load_model(model_path) 
 model.summary()
 
 
 # In[ ]:
 
-image_name = "center_2016_12_01_13_32_43_659.jpg" # stering 0.05219137
-original_steering_angle = 0.05219137
+image_name = "center_2016_12_01_13_38_59_461.jpg" # stering 0.05219137
+original_steering_angle = 0.7315571
 
-image_name = "center_2016_12_01_13_33_10_579.jpg" # 0.1287396
-original_steering_angle = 0.05219137
-
-image_name = "center_2017_01_21_01_10_33_504.jpg" # -0.8188741
-original_steering_angle = -0.8188741
-
-image_path =  data_dir + processed_images_dir + image_name
+image_path =  data_dir +   image_name
 print(image_path)
 image = read_image(image_path)
 print(image.shape)
@@ -315,7 +369,9 @@ plt.show()
 
 # In[ ]:
 
-predictions = model.predict( image[None, :, :], batch_size=1, verbose=1)
+predictions = model.predict( image[None, :, :], 
+                            batch_size = 1, 
+                            verbose = 1)
 
 
 # # Extract top prediction
