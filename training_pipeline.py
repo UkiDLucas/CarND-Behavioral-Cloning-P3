@@ -7,7 +7,7 @@
 
 # ## Set parameters that will control the execution
 
-# In[ ]:
+# In[1]:
 
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
@@ -22,7 +22,7 @@ previous_trained_epochs = 30
 
 # # Allocate only a fraction of memory to TensorFlow GPU process
 
-# In[ ]:
+# In[2]:
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
@@ -41,7 +41,7 @@ print(get_available_CPU_GPU())
 
 # # Fetch data from CSV file
 
-# In[ ]:
+# In[3]:
 
 from  DataHelper import read_csv
 csv_path = data_dir + driving_data_csv
@@ -51,7 +51,7 @@ headers, data = read_csv(data_dir + driving_data_csv)
 
 # # Split data into training, testing and validation sets
 
-# In[ ]:
+# In[4]:
 
 from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
@@ -67,7 +67,7 @@ print("validation", validation.shape)
 # - I can drive the car on the track backwards
 # - I can flip each image (and value)
 
-# In[ ]:
+# In[5]:
 
 from DataHelper import plot_histogram, get_steering_values, find_nearest
 steering_angles = get_steering_values(training)
@@ -76,7 +76,7 @@ plot_histogram("steering values", steering_angles, change_step=0.01)
 
 # # Extract image names
 
-# In[ ]:
+# In[6]:
 
 from DataHelper import get_image_center_values 
 image_names = get_image_center_values(training)
@@ -86,7 +86,7 @@ print(image_names[1])
 
 # # Create a list of image paths
 
-# In[ ]:
+# In[7]:
 
 image_paths = []
 for image_name in image_names: # [0:50]
@@ -99,7 +99,7 @@ print(image_paths[1])
 # - make sure they are in the right color representation
 # - use Generator
 
-# In[ ]:
+# In[8]:
 
 import numpy as np 
 from ImageHelper import read_image_array
@@ -127,7 +127,7 @@ plt.show()
 # 
 # https://keras.io/layers/convolutional/
 
-# In[ ]:
+# In[9]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -142,44 +142,51 @@ from DataHelper import mean_pred, false_rates
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Convolution1D
 
 
+# # Build a Convolutional Neural Network
+
+# ## Minimal Model
+
+# In[10]:
+
+def get_CDNN_model_minimal(input_shape):
+    model = Sequential()
+    
+    model.add(Lambda(lambda x: x/255.0 - 0.5, # normalize RGB 0-255 to -0.5 to 0.5
+                     input_shape=input_shape,
+                    name="Normalize_RGB"))
+    model.add(Convolution2D(32, 3, 3, border_mode='same', 
+                            activation="relu", dim_ordering='tf', name="Convo_ReLU_32x3x3_01"))
+    model.add(Convolution2D(32, 5, 5, border_mode='same', 
+                            activation="relu", name="Convo_ReLU_32x5x5_02" ))
+    model.add(Convolution2D(32, 5, 5, border_mode='same', 
+                            activation="relu", name="Convo_ReLU_32x5x5_03" ))
+    model.add(Flatten())
+    #model.add(MaxPooling2D(pool_size=(2, 2), name="MaxPool_2x2"))
+
+    model.add(Dense(256, activation="relu", name="Dense_relu_256_01")) #256
+    model.add(Dropout(0.25, name="Dropout_0.25_01"))
+    model.add(Dense(256, activation="relu", name="Dense_relu_256_02" )) #256
+
+    # CLASSIFICATION
+    #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
+
+    # REGRESSION
+    model.add(Dense(1, activation='linear'))
+    return model
+
+
 # In[ ]:
 
-# Build a Convolutional Neural Network
 
-
-# In[ ]:
-
-# Expected to see 1 arrays but instead got the following list of 8792 arrays: [array([[[203, 156, 129],
-
-
-model = Sequential()
-# sample_image   (160, 320, 3)
-model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu" ,
-                        input_shape=(160, 320 ,3), dim_ordering='tf', name="conv2d_1_relu"))
-model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", name="conv2d_2_relu" ))
-model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu", name="conv2d_3_relu" ))
-
-model.add(Flatten())
-
-#model.add(MaxPooling2D(pool_size=(2, 2)))
-
-#model.add(Dense(256, activation="relu", name="dense_1_relu")) #256
-#model.add(Dropout(0.25, name="dropout_1_0.25"))
-#model.add(Dense(256, activation="relu", name="dense_2_relu" )) #256
-
-# CLASSIFICATION
-#model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
-
-# REGRESSION
-model.add(Dense(1, activation='linear'))
-
-model.summary()
 
 
 # # Compile model (configure learning process)
 
-# In[ ]:
+# In[11]:
 
+input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
+model = get_CDNN_model_minimal(input_shape)
+model.summary()
 # Before training a model, you need to configure the learning process, which is done via the compile method.
 # 
 # keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
@@ -203,7 +210,7 @@ if should_retrain_existing_model:
     model.summary()
 # # Train (fit) the model agaist given labels
 
-# In[ ]:
+# In[12]:
 
 print( "training_features.shape", len(training_features) )
 # REGRESSION
