@@ -11,13 +11,13 @@
 
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
-driving_data_csv = "driving_log.csv"
+driving_data_csv = "driving_log_original.csv"
 batch_size = 32 #256
 nb_epoch = 3 
 
 should_retrain_existing_model = False
 saved_model = "model_epoch_33_val_acc_0.0.h5"
-previous_trained_epochs = 30
+previous_trained_epochs = 0
 
 
 # # Allocate only a fraction of memory to TensorFlow GPU process
@@ -26,7 +26,7 @@ previous_trained_epochs = 30
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6) # try range from 0.333 ot .9
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9) # try range from 0.3 to 0.9
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
 
 #### Show available CPU and GPU(s)
@@ -127,7 +127,7 @@ plt.show()
 # 
 # https://keras.io/layers/convolutional/
 
-# In[9]:
+# In[ ]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -146,7 +146,7 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 
 # ## Minimal Model
 
-# In[10]:
+# In[ ]:
 
 def get_CDNN_model_minimal(input_shape):
     model = Sequential()
@@ -175,14 +175,40 @@ def get_CDNN_model_minimal(input_shape):
     return model
 
 
-# In[ ]:
+# # Define Generator
+from keras.datasets import mnist
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape
+from keras.layers.convolutional import Convolution1D, Convolution2D, MaxPooling2D
+from keras.utils import np_utils
 
 
+def yield_generator(X_train, y_train):
+    while 1:
+        for i in range(1875):
+            if i % 50 == 0:
+                print ("i = " + str(i) )
+            yield X_train[i*32:(i+1)*32], y_train[i*32:(i+1)*32]
+            
+            
+def yield_generator_from_file(csv_file_path):
+    while 1:
+        f = open(csv_file_path)
+        for line in f:
+            # create numpy arrays of input data
+            # and labels, from each line in the file
+            x, y = process_line(line)
+            img = load_images(x)
+            yield (img, y)
+        f.close()
 
-
+model.fit_generator(
+    yield_generator_from_file('/my_file.txt'),
+    samples_per_epoch=10000, 
+    nb_epoch=10)
 # # Compile model (configure learning process)
 
-# In[11]:
+# In[ ]:
 
 input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
 model = get_CDNN_model_minimal(input_shape)
@@ -210,7 +236,7 @@ if should_retrain_existing_model:
     model.summary()
 # # Train (fit) the model agaist given labels
 
-# In[12]:
+# In[ ]:
 
 print( "training_features.shape", len(training_features) )
 # REGRESSION
