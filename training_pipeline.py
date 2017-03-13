@@ -20,9 +20,14 @@ saved_model = "model_epoch_33_val_acc_0.0.h5"
 previous_trained_epochs = 0
 
 
+# In[2]:
+
+import DataHelper
+
+
 # # Allocate only a fraction of memory to TensorFlow GPU process
 
-# In[2]:
+# In[3]:
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
@@ -41,7 +46,7 @@ print(get_available_CPU_GPU())
 
 # # Fetch data from CSV file
 
-# In[3]:
+# In[4]:
 
 from  DataHelper import read_csv
 csv_path = data_dir + driving_data_csv
@@ -51,7 +56,7 @@ headers, data = read_csv(data_dir + driving_data_csv)
 
 # # Split data into training, testing and validation sets
 
-# In[4]:
+# In[5]:
 
 from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
@@ -67,16 +72,46 @@ print("validation", validation.shape)
 # - I can drive the car on the track backwards
 # - I can flip each image (and value)
 
-# In[5]:
+# In[6]:
 
 from DataHelper import plot_histogram, get_steering_values, find_nearest
 steering_angles = get_steering_values(training)
 plot_histogram("steering values", steering_angles, change_step=0.01)
 
 
+# # Remove zero-steering angles from training set 
+
+# In[17]:
+
+import numpy as np
+
+def multidelete(original_list, items_to_delete):
+   items_to_delete = np.array(items_to_delete)
+   shift = np.triu((items_to_delete >= items_to_delete[:,None]),1).sum(0)
+   return np.delete(original_list, items_to_delete + shift)
+
+print("len(training)", len(training))
+
+indexes_to_remove = []
+
+for index in range (len(steering_angles)):
+    angle = steering_angles[index]
+    if round(angle,0) == 0.0: 
+        indexes_to_remove.append(index)
+        
+training = multidelete(training, indexes_to_remove)
+        
+#print("indexes_to_remove", indexes_to_remove)
+print("len(training)", len(training))
+        
+steering_angles = get_steering_values(training)
+
+plot_histogram("steering values", steering_angles, change_step=0.01)
+
+
 # # Extract image names
 
-# In[6]:
+# In[8]:
 
 from DataHelper import get_image_center_values 
 image_names = get_image_center_values(training)
@@ -86,12 +121,13 @@ print(image_names[1])
 
 # # Create a list of image paths
 
-# In[7]:
+# In[9]:
 
 image_paths = []
 for image_name in image_names: # [0:50]
     image_paths.extend([data_dir + image_dir + image_name])
 print(image_paths[1]) 
+print("found paths:", len(image_paths) ) 
 
 
 # # Read images and display a sample
@@ -99,7 +135,16 @@ print(image_paths[1])
 # - make sure they are in the right color representation
 # - use Generator
 
-# In[8]:
+# In[10]:
+
+def yield_generator(image_paths, steering_angles):
+    print("found image_paths:", len(image_paths) ) 
+    print("found steering_angles:", len(steering_angles) ) 
+
+yield_generator(image_paths, steering_angles)
+
+
+# In[11]:
 
 import numpy as np 
 from ImageHelper import read_image_array
