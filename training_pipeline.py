@@ -7,13 +7,13 @@
 
 # ## Set parameters that will control the execution
 
-# In[1]:
+# In[15]:
 
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-batch_size = 32 #256
-nb_epoch = 3 
+YIELD_BATCH_SIZE = 32 #256
+RUN_EPOCHS = 3 
 
 should_retrain_existing_model = False
 saved_model = "model_epoch_33_val_acc_0.0.h5"
@@ -122,7 +122,7 @@ training = remove_zeros(training)
 
 # # Extract image names
 
-# In[12]:
+# In[8]:
 
 def get_center_image_names(training):
     from DataHelper import get_image_center_values 
@@ -136,7 +136,7 @@ image_names = get_center_image_names(training)
 
 # # Create a list of image paths
 
-# In[21]:
+# In[9]:
 
 def build_image_paths(image_names):
     image_paths = []
@@ -151,7 +151,7 @@ image_paths = build_image_paths(image_names)
 
 # # Read actual images
 
-# In[18]:
+# In[10]:
 
 def read_images(image_paths):
     import numpy as np 
@@ -165,7 +165,7 @@ def read_images(image_paths):
     return training_features
 
 
-# In[22]:
+# In[11]:
 
 training_features = read_images(image_paths)
 
@@ -182,23 +182,16 @@ plt.show()
 #print(sample_image[0][0:15])
 
 
-# # Read images and display a sample
-# 
-# - make sure they are in the right color representation
-# - use Generator
+# # Define yield Generator
 
-# In[11]:
-
-print(training[0])
-
-from sklearn.model_selection import train_test_split 
-
-import cv2
-import numpy as np
-import sklearn
+# In[21]:
 
 def generator(training, batch_size=32):
-
+    """
+    Yields batches of training and testing data every time the generator is called.
+    """
+    import sklearn
+    import numpy as np
     while 1: # Loop forever so the generator never terminates
         shuffle(training)
         for offset in range(0, len(training), batch_size):
@@ -217,8 +210,11 @@ def generator(training, batch_size=32):
             yield sklearn.utils.shuffle(X_train, y_train)
 
 # compile and train the model using the generator function
-train_generator = generator(training, batch_size=32)
-validation_generator = generator(testing, batch_size=32)
+train_generator = generator(training, YIELD_BATCH_SIZE)
+validation_generator = generator(testing, YIELD_BATCH_SIZE)
+
+
+# In[12]:
 
 image_dimentions = (3, 80, 320)  # Trimmed image format
 
@@ -232,7 +228,7 @@ model.add(Lambda(lambda x: x/127.5 - 1.,
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator, samples_per_epoch= /
             len(train_samples), validation_data=validation_generator, /
-            nb_val_samples=len(validation_samples), nb_epoch=3)
+            nb_val_samples=len(validation_samples), nb_epoch=RUN_EPOCHS)
 
 
 # # Import Keras (layer above TensorFlow)
@@ -245,12 +241,10 @@ import keras.backend as K
 from keras.models import Sequential
 from keras.layers import ELU, InputLayer, Input
 from keras.layers.core import Flatten, Dense, Dropout, Activation, Lambda
-
 from keras.activations import relu, softmax
 from keras.optimizers import SGD
 import cv2, numpy as np
 from DataHelper import mean_pred, false_rates
-
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Convolution1D
 
 
@@ -287,37 +281,6 @@ def get_CDNN_model_minimal(input_shape):
     return model
 
 
-# # Define Generator
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape
-from keras.layers.convolutional import Convolution1D, Convolution2D, MaxPooling2D
-from keras.utils import np_utils
-
-
-def yield_generator(X_train, y_train):
-    while 1:
-        for i in range(1875):
-            if i % 50 == 0:
-                print ("i = " + str(i) )
-            yield X_train[i*32:(i+1)*32], y_train[i*32:(i+1)*32]
-            
-            
-def yield_generator_from_file(csv_file_path):
-    while 1:
-        f = open(csv_file_path)
-        for line in f:
-            # create numpy arrays of input data
-            # and labels, from each line in the file
-            x, y = process_line(line)
-            img = load_images(x)
-            yield (img, y)
-        f.close()
-
-model.fit_generator(
-    yield_generator_from_file('/my_file.txt'),
-    samples_per_epoch=10000, 
-    nb_epoch=10)
 # # Compile model (configure learning process)
 
 # In[ ]:
