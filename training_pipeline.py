@@ -122,49 +122,52 @@ training = remove_zeros(training)
 
 # # Extract image names
 
-# In[8]:
+# In[12]:
 
-from DataHelper import get_image_center_values 
-image_names = get_image_center_values(training)
-print("image count", image_names.shape[0])
-print(image_names[1])
+def get_center_image_names(training):
+    from DataHelper import get_image_center_values 
+    image_names = get_image_center_values(training)
+    print("image count", image_names.shape[0])
+    print(image_names[1])
+    return image_names
+
+image_names = get_center_image_names(training)
 
 
 # # Create a list of image paths
 
-# In[9]:
+# In[21]:
 
-image_paths = []
-for image_name in image_names: # [0:50]
-    image_paths.extend([data_dir + image_dir + image_name])
-print(image_paths[1]) 
-print("found paths:", len(image_paths) ) 
+def build_image_paths(image_names):
+    image_paths = []
+    for image_name in image_names:
+        image_paths.extend([data_dir + image_name])
+    print(image_paths[1]) 
+    print("found paths:", len(image_paths) ) 
+    return image_paths
 
-
-# # Read images and display a sample
-# 
-# - make sure they are in the right color representation
-# - use Generator
-
-# In[10]:
-
-def yield_generator(image_paths, steering_angles):
-    print("found image_paths:", len(image_paths) ) 
-    print("found steering_angles:", len(steering_angles) ) 
-
-yield_generator(image_paths, steering_angles)
+image_paths = build_image_paths(image_names)
 
 
-# In[ ]:
+# # Read actual images
 
-import numpy as np 
-from ImageHelper import read_image_array
-#training_features = [read_image_array(path) for path in image_paths]
+# In[18]:
 
-image_list = []
-for path in image_paths:
-    image_list.append(read_image_array(path))
-training_features = np.array(image_list) # numpy array, not just a list
+def read_images(image_paths):
+    import numpy as np 
+    from ImageHelper import read_image_array
+    #training_features = [read_image_array(path) for path in image_paths]
+
+    image_list = []
+    for path in image_paths[0:5]:
+        image_list.append(read_image_array(path))
+    training_features = np.array(image_list) # numpy array, not just a list
+    return training_features
+
+
+# In[22]:
+
+training_features = read_images(image_paths)
 
 print ("image_paths[2]", image_paths[2] )
 print ("training_features count", len(training_features) )
@@ -177,6 +180,59 @@ plt.imshow(sample_image) # cmap='gray' , cmap='rainbow'
 plt.show()
 
 #print(sample_image[0][0:15])
+
+
+# # Read images and display a sample
+# 
+# - make sure they are in the right color representation
+# - use Generator
+
+# In[11]:
+
+print(training[0])
+
+from sklearn.model_selection import train_test_split 
+
+import cv2
+import numpy as np
+import sklearn
+
+def generator(training, batch_size=32):
+
+    while 1: # Loop forever so the generator never terminates
+        shuffle(training)
+        for offset in range(0, len(training), batch_size):
+            training_batch = training[offset:(offset + batch_size)]
+            
+            steering_angles = get_steering_values(training_batch)
+            
+            image_names = get_center_image_names(training_batch)
+            image_paths = build_image_paths(image_names)
+            training_features = read_images(image_paths)
+
+
+            # trim image to only see section with road
+            X_train = np.array(training_features)
+            y_train = np.array(steering_angles)
+            yield sklearn.utils.shuffle(X_train, y_train)
+
+# compile and train the model using the generator function
+train_generator = generator(training, batch_size=32)
+validation_generator = generator(testing, batch_size=32)
+
+image_dimentions = (3, 80, 320)  # Trimmed image format
+
+model = Sequential()
+# Preprocess incoming data, centered around zero with small standard deviation 
+model.add(Lambda(lambda x: x/127.5 - 1.,
+        input_shape=image_dimentions,
+        output_shape=image_dimentions))
+#model.add(... finish defining the rest of your model architecture here ...)
+
+model.compile(loss='mse', optimizer='adam')
+model.fit_generator(train_generator, samples_per_epoch= /
+            len(train_samples), validation_data=validation_generator, /
+            nb_val_samples=len(validation_samples), nb_epoch=3)
 
 
 # # Import Keras (layer above TensorFlow)
