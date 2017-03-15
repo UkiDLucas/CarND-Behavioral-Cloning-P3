@@ -72,48 +72,57 @@ print("validation", validation.shape)
 # - I can drive the car on the track backwards
 # - I can flip each image (and value)
 
-# In[6]:
+# In[ ]:
 
-from DataHelper import plot_histogram, get_steering_values, find_nearest
-steering_angles = get_steering_values(training)
-plot_histogram("steering values", steering_angles, change_step=0.01)
+
 
 
 # # Remove zero-steering angles from training set 
 
-# In[24]:
+# In[6]:
 
 import numpy as np
+from DataHelper import plot_histogram, get_steering_values, find_nearest
 
-print("len(training)", len(training))
 
-indexes_to_keep = []
+# In[7]:
 
-for index in range (len(steering_angles)):
-    angle = steering_angles[index]
-    if angle != 0: 
-        indexes_to_keep.append(index)
-         
-print("len(indexes_to_keep)", len(indexes_to_keep))
+def remove_zeros(training):
+    
+    print("len(training)", len(training))
+    indexes_to_keep = []
+    
+    steering_angles = get_steering_values(training)
+    plot_histogram("steering values", steering_angles, change_step=0.01)
 
-training_to_keep = []
-for index in indexes_to_keep:
-    training_to_keep.append(training[index])
+    for index in range (len(steering_angles)):
+        angle = steering_angles[index]
+        if angle != 0: 
+            indexes_to_keep.append(index)
 
-training = training_to_keep
-# release the memory
-training_to_keep = []
-indexes_to_keep = []
+    print("len(indexes_to_keep)", len(indexes_to_keep))
 
-print("len(training)", len(training))
-        
-steering_angles = get_steering_values(training)
-plot_histogram("steering values", steering_angles, change_step=0.01)
+    training_to_keep = []
+    for index in indexes_to_keep:
+        training_to_keep.append(training[index])
+
+    training = training_to_keep
+    # release the memory
+    training_to_keep = []
+    indexes_to_keep = []
+
+    print("len(training)", len(training))
+
+    steering_angles = get_steering_values(training)
+    plot_histogram("steering values", steering_angles, change_step=0.01)
+    return training
+
+training = remove_zeros(training)
 
 
 # # Extract image names
 
-# In[ ]:
+# In[8]:
 
 from DataHelper import get_image_center_values 
 image_names = get_image_center_values(training)
@@ -123,7 +132,7 @@ print(image_names[1])
 
 # # Create a list of image paths
 
-# In[ ]:
+# In[9]:
 
 image_paths = []
 for image_name in image_names: # [0:50]
@@ -137,7 +146,7 @@ print("found paths:", len(image_paths) )
 # - make sure they are in the right color representation
 # - use Generator
 
-# In[ ]:
+# In[10]:
 
 def yield_generator(image_paths, steering_angles):
     print("found image_paths:", len(image_paths) ) 

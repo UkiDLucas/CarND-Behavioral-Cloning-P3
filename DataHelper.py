@@ -9,6 +9,7 @@ Created by Uki D. Lucas on Feb. 4, 2017
 """
 
 should_run_tests = False
+import keras.backend as K
 
 
 # In[2]:
@@ -33,7 +34,7 @@ def predict_class(predictions, classes):
 
 
 
-# In[4]:
+# In[3]:
 
 import numpy as np
 
@@ -93,7 +94,7 @@ if should_run_tests:
     test_read_csv()
 
 
-# In[5]:
+# In[4]:
 
 def create_steering_classes(number_of_classes = 41):
     steering_classes = np.linspace(-1, 1, num=number_of_classes, endpoint=True, dtype=np.float32) 
@@ -101,7 +102,7 @@ def create_steering_classes(number_of_classes = 41):
     return steering_classes
 
 
-# In[6]:
+# In[5]:
 
 # snapping actual values to given labels
 
@@ -118,7 +119,7 @@ if should_run_tests:
 
 
 
-# In[7]:
+# In[6]:
 
 import numpy as np
 import math
@@ -190,7 +191,7 @@ if should_run_tests:
     test_split_random()
 
 
-# In[8]:
+# In[7]:
 
 def get_image_center_values(matrix):
     data = [row[0] for row in matrix]
@@ -226,10 +227,10 @@ def get_speed_values(matrix):
 
 
 
-# In[9]:
+# In[8]:
 
 # for custom metrics
-import keras.backend as K
+
 
 def mean_pred(y_true, y_pred):
     return K.mean(y_pred)
@@ -248,7 +249,7 @@ def false_rates(y_true, y_pred):
 
 
 
-# In[10]:
+# In[9]:
 
 def sort_unique_floats(array_x):
     # assure that the array is numpy and numerical
@@ -269,7 +270,7 @@ def sort_unique_floats(array_x):
 # TEST   
 
 
-# In[11]:
+# In[10]:
 
 def locate_one_hot_position(defined_classes, actual_label):
     
@@ -322,7 +323,7 @@ def encode_one_hot(defined_classes, sample_labels):
     return one_hot
 
 
-# In[12]:
+# In[11]:
 
 def show_layers(model):
     for i in range(len(model.layers)):
@@ -332,7 +333,7 @@ def show_layers(model):
     return len(model.layers)
 
 
-# In[13]:
+# In[12]:
 
 import numpy as np
 #import random
@@ -346,14 +347,12 @@ def margin(value):
 def plot_histogram(name, values, change_step):
     
     min_value = min(values)
-    print("min_value", min_value)
     max_value = max(values)
-    print("max_value", max_value)
+    print("min_value", min_value, "max_value", max_value)
     
-    spread = max_value-min_value
-    print("spread", spread)
+    spread = max_value - min_value
     recommended_bins = math.ceil(spread/change_step)
-    print("recommended number of classes", recommended_bins)
+    print("spread", spread, "in", recommended_bins, "bins")
     
     bins = np.linspace(math.floor(min(values)), 
                        math.ceil(max(values)),
@@ -377,7 +376,7 @@ def plot_histogram(name, values, change_step):
     plt.show()
 
 
-# In[14]:
+# In[13]:
 
 def plot_steering_values(values):
     
