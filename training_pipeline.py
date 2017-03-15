@@ -7,7 +7,7 @@
 
 # ## Set parameters that will control the execution
 
-# In[15]:
+# In[1]:
 
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
@@ -61,7 +61,7 @@ headers, data = read_csv(data_dir + driving_data_csv)
 from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
 
-print("training", training.shape)
+print("training", training.shape, type(training) )
 print("testing", testing.shape)
 print("validation", validation.shape)
 
@@ -184,16 +184,19 @@ plt.show()
 
 # # Define yield Generator
 
-# In[21]:
+# In[12]:
 
-def generator(training, batch_size=32):
+import numpy as np
+
+def generator(training: np.ndarray, batch_size: int=32):
     """
     Yields batches of training and testing data every time the generator is called.
+    I will use Keras to pre-process images (trim, resize)
     """
     import sklearn
-    import numpy as np
-    while 1: # Loop forever so the generator never terminates
-        shuffle(training)
+    
+    while True:
+        #shuffle(training) # unnecessary and probably a bad idea
         for offset in range(0, len(training), batch_size):
             training_batch = training[offset:(offset + batch_size)]
             
@@ -203,10 +206,13 @@ def generator(training, batch_size=32):
             image_paths = build_image_paths(image_names)
             training_features = read_images(image_paths)
 
-
-            # trim image to only see section with road
+            # I will use Keras to pre-process images (trim, resize)
+            
             X_train = np.array(training_features)
             y_train = np.array(steering_angles)
+            
+            # it is OK to shuffle records within the batch
+            # may be not desirable if we want to learn from sequence of images in the future
             yield sklearn.utils.shuffle(X_train, y_train)
 
 # compile and train the model using the generator function
@@ -214,28 +220,11 @@ train_generator = generator(training, YIELD_BATCH_SIZE)
 validation_generator = generator(testing, YIELD_BATCH_SIZE)
 
 
-# In[12]:
-
-image_dimentions = (3, 80, 320)  # Trimmed image format
-
-model = Sequential()
-# Preprocess incoming data, centered around zero with small standard deviation 
-model.add(Lambda(lambda x: x/127.5 - 1.,
-        input_shape=image_dimentions,
-        output_shape=image_dimentions))
-#model.add(... finish defining the rest of your model architecture here ...)
-
-model.compile(loss='mse', optimizer='adam')
-model.fit_generator(train_generator, samples_per_epoch= /
-            len(train_samples), validation_data=validation_generator, /
-            nb_val_samples=len(validation_samples), nb_epoch=RUN_EPOCHS)
-
-
 # # Import Keras (layer above TensorFlow)
 # 
 # https://keras.io/layers/convolutional/
 
-# In[ ]:
+# In[13]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -252,7 +241,12 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 
 # ## Minimal Model
 
-# In[ ]:
+# In[14]:
+
+# image_dimentions = (3, 80, 320)  # Trimmed image format
+
+
+# In[15]:
 
 def get_CDNN_model_minimal(input_shape):
     model = Sequential()
@@ -283,7 +277,7 @@ def get_CDNN_model_minimal(input_shape):
 
 # # Compile model (configure learning process)
 
-# In[ ]:
+# In[16]:
 
 input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
 model = get_CDNN_model_minimal(input_shape)
@@ -292,7 +286,7 @@ model.summary()
 # 
 # keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
-optimizer='sgd' # | 'rmsprop'
+optimizer="adam" # 'sgd' | 'rmsprop'
 loss_function="mse" # | 'binary_crossentropy' | 'mse' | mean_squared_error | sparse_categorical_crossentropy
 metrics_array=['accuracy'] # , mean_pred, false_rates
 
@@ -311,20 +305,21 @@ if should_retrain_existing_model:
     model.summary()
 # # Train (fit) the model agaist given labels
 
-# In[ ]:
+# In[17]:
 
 print( "training_features.shape", len(training_features) )
-# REGRESSION
-history = model.fit(training_features, 
-                    y = steering_angles, 
-                    nb_epoch = nb_epoch, 
-                    batch_size = batch_size, 
-                    verbose = 2, 
-                    validation_split = 0.2)
 
-# CLASSIFICATION
-#history = model.fit(training_features, 
-#y_one_hot, nb_epoch=nb_epoch, batch_size=batch_size, verbose=1, validation_split=0.2)
+# https://keras.io/models/sequential/
+# steps_per_epoch: 
+# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished 
+# and starting the next epoch. 
+# It should typically be equal to the number of unique samples 
+# if your dataset divided by the batch size.
+history = model.fit_generator(train_generator, 
+                              samples_per_epoch = len(training), 
+                              validation_data = validation_generator, 
+                              nb_val_samples = len(validation), 
+                              nb_epoch = RUN_EPOCHS)
 
 ____________________________________________________________________________________________________
 Layer (type)                     Output Shape          Param #     Connected to                     
