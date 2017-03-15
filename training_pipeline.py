@@ -81,37 +81,39 @@ plot_histogram("steering values", steering_angles, change_step=0.01)
 
 # # Remove zero-steering angles from training set 
 
-# In[17]:
+# In[24]:
 
 import numpy as np
 
-def multidelete(original_list, items_to_delete):
-   items_to_delete = np.array(items_to_delete)
-   shift = np.triu((items_to_delete >= items_to_delete[:,None]),1).sum(0)
-   return np.delete(original_list, items_to_delete + shift)
-
 print("len(training)", len(training))
 
-indexes_to_remove = []
+indexes_to_keep = []
 
 for index in range (len(steering_angles)):
     angle = steering_angles[index]
-    if round(angle,0) == 0.0: 
-        indexes_to_remove.append(index)
-        
-training = multidelete(training, indexes_to_remove)
-        
-#print("indexes_to_remove", indexes_to_remove)
+    if angle != 0: 
+        indexes_to_keep.append(index)
+         
+print("len(indexes_to_keep)", len(indexes_to_keep))
+
+training_to_keep = []
+for index in indexes_to_keep:
+    training_to_keep.append(training[index])
+
+training = training_to_keep
+# release the memory
+training_to_keep = []
+indexes_to_keep = []
+
 print("len(training)", len(training))
         
 steering_angles = get_steering_values(training)
-
 plot_histogram("steering values", steering_angles, change_step=0.01)
 
 
 # # Extract image names
 
-# In[8]:
+# In[ ]:
 
 from DataHelper import get_image_center_values 
 image_names = get_image_center_values(training)
@@ -121,7 +123,7 @@ print(image_names[1])
 
 # # Create a list of image paths
 
-# In[9]:
+# In[ ]:
 
 image_paths = []
 for image_name in image_names: # [0:50]
@@ -135,7 +137,7 @@ print("found paths:", len(image_paths) )
 # - make sure they are in the right color representation
 # - use Generator
 
-# In[10]:
+# In[ ]:
 
 def yield_generator(image_paths, steering_angles):
     print("found image_paths:", len(image_paths) ) 
@@ -144,7 +146,7 @@ def yield_generator(image_paths, steering_angles):
 yield_generator(image_paths, steering_angles)
 
 
-# In[11]:
+# In[ ]:
 
 import numpy as np 
 from ImageHelper import read_image_array
