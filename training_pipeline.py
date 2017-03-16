@@ -12,8 +12,8 @@
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-YIELD_BATCH_SIZE = 32 #256
-RUN_EPOCHS = 3 
+YIELD_BATCH_SIZE = 16 #256
+RUN_EPOCHS = 5 
 
 should_retrain_existing_model = False
 saved_model = "model_epoch_33_val_acc_0.0.h5"
@@ -159,7 +159,7 @@ def read_images(image_paths):
     #training_features = [read_image_array(path) for path in image_paths]
 
     image_list = []
-    for path in image_paths[0:5]:
+    for path in image_paths:
         image_list.append(read_image_array(path))
     training_features = np.array(image_list) # numpy array, not just a list
     return training_features
@@ -186,7 +186,7 @@ plt.show()
 # 
 # https://keras.io/layers/convolutional/
 
-# In[14]:
+# In[12]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -203,12 +203,12 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 
 # ## Minimal Model
 
-# In[15]:
+# In[13]:
 
 # image_dimentions = (3, 80, 320)  # Trimmed image format
 
 
-# In[16]:
+# In[14]:
 
 def get_CDNN_model_minimal(input_shape):
     model = Sequential()
@@ -223,7 +223,7 @@ def get_CDNN_model_minimal(input_shape):
 
     model.add(Dense(256, activation="relu")) #256
     model.add(Dropout(0.25, name="Dropout_0.25_01"))
-    model.add(Dense(256, activation="relu" )) #256
+    #model.add(Dense(256, activation="relu" )) #256
 
     # CLASSIFICATION
     #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
@@ -235,7 +235,7 @@ def get_CDNN_model_minimal(input_shape):
 
 # # Compile model (configure learning process)
 
-# In[17]:
+# In[15]:
 
 input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
 model = get_CDNN_model_minimal(input_shape)
@@ -263,7 +263,7 @@ if should_retrain_existing_model:
     model.summary()
 # # Define yield Generator
 
-# In[12]:
+# In[16]:
 
 import numpy as np
 
@@ -275,30 +275,31 @@ def generator(example_set: np.ndarray, batch_size: int=32):
     import sklearn
     yield_number = 0
     while True:
-        #shuffle(example_set) # unnecessary
         for offset in range(0, len(example_set), batch_size):
             
             sample_batch = example_set[offset:(offset + batch_size)]
-            print(yield_number, "from sample set of size", len(example_set), 
-                  " getting batch", len(sample_batch) , "between", offset, "and", offset + batch_size)
+            print(yield_number, ") from sample set of size=", len(example_set), 
+                  "getting batch between", offset, "and", offset + batch_size,
+                  "batch size=", len(sample_batch))
             
-            labels = get_steering_values(sample_batch)
+            labels = get_steering_values(sample_batch) 
             
-            image_names = get_center_image_names(sample_batch)
-            image_paths = build_image_paths(image_names)
-            features = read_images(image_paths)
+            image_names = get_center_image_names(sample_batch) 
+            image_paths = build_image_paths(image_names) 
+            features = read_images(image_paths) 
 
             # I will use Keras to pre-process images (trim, resize)
             
             if len(features) != len(labels):
                 print("ERROR: ", len(features), " features and ", len(labels), "labels count not matching!")
+                #raise Exception("ERROR: ", len(features), " features and ", len(labels), "labels count not matching!")
             
             yield_number = yield_number = 1
             #sklearn.utils.shuffle( ) # I prefer not to mix them
             yield np.array(features), np.array(labels)
 
 
-# In[13]:
+# In[17]:
 
 train_generator = generator(training, YIELD_BATCH_SIZE)
 validation_generator = generator(testing, YIELD_BATCH_SIZE)
@@ -309,17 +310,20 @@ validation_generator = generator(testing, YIELD_BATCH_SIZE)
 # https://keras.io/models/sequential/
 # 
 # 
-# steps_per_epoch: 
-# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch. 
-# It should typically be equal to the number of unique samples if your dataset divided by the batch size.
+# - steps_per_epoch: 
+# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch. It should typically be equal to the number of unique samples if your dataset divided by the batch size.
+# 
+# - initial_epoch: Epoch at which to start training (useful for resuming a previous training run)
+# 
 
 # In[18]:
 
-history = model.fit_generator(train_generator, 
+history = model.fit_generator(train_generator,
                               samples_per_epoch = len(training), 
+                              nb_epoch = RUN_EPOCHS, 
                               validation_data = validation_generator, 
                               nb_val_samples = len(validation), 
-                              nb_epoch = RUN_EPOCHS)
+                              verbose = 0)
 
 ____________________________________________________________________________________________________
 Layer (type)                     Output Shape          Param #     Connected to                     
