@@ -7,7 +7,7 @@
 
 # ## Set parameters that will control the execution
 
-# In[1]:
+# In[25]:
 
 DATA_DIR = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
@@ -16,8 +16,8 @@ YIELD_BATCH_SIZE = 256
 RUN_EPOCHS = 5 
 
 should_retrain_existing_model = False
-saved_model = "model_epoch_33_val_acc_0.0.h5"
-previous_trained_epochs = 0
+SAVED_MODEL = "model_epoch_5_val_acc_0.543157893482.h5"
+RUN_EPOCHS_PREVIOUSLY = 0
 
 
 # In[2]:
@@ -220,7 +220,7 @@ if should_retrain_existing_model:
 from generator import * # my own implementation of yield generator, same directory
 
 
-# In[ ]:
+# In[15]:
 
 train_generator = generator(training, DATA_DIR, YIELD_BATCH_SIZE)
 validation_generator = generator(testing, DATA_DIR, YIELD_BATCH_SIZE)
@@ -237,7 +237,7 @@ validation_generator = generator(testing, DATA_DIR, YIELD_BATCH_SIZE)
 # - initial_epoch: Epoch at which to start training (useful for resuming a previous training run)
 # 
 
-# In[ ]:
+# In[16]:
 
 history = model.fit_generator(train_generator,
                               samples_per_epoch = len(training), 
@@ -307,31 +307,33 @@ Non-trainable params: 0
 Train on 472 samples, validate on 118 samples
 - MacBook Pro CPU 156s / epoch
 - MacBook Pro GPU ResourceExhaustedError
-# In[ ]:
+# In[18]:
 
 # list all data in history
 print(history.history.keys())
 
-training_accuracy = str( history.history['acc'][nb_epoch-1])
+index = RUN_EPOCHS - 1
+
+training_accuracy = str( history.history['acc'][index])
 print("training_accuracy", training_accuracy)
 
-training_error = str( history.history['loss'][nb_epoch-1])
+training_error = str( history.history['loss'][index])
 print("training_error", training_error)
 
-validation_accuracy = str( history.history['val_acc'][nb_epoch-1])
+validation_accuracy = str( history.history['val_acc'][index])
 print("validation_accuracy", validation_accuracy)
 
-validation_error = str( history.history['val_loss'][nb_epoch-1])
+validation_error = str( history.history['val_loss'][index])
 print("validation_error", validation_error)
 
 
 # # Save the model
 
-# In[ ]:
+# In[20]:
 
 # creates a HDF5 file '___.h5'
 model.save(DATA_DIR 
-           + "model_epoch_" + str(nb_epoch + previous_trained_epochs) 
+           + "model_epoch_" + str(RUN_EPOCHS + RUN_EPOCHS_PREVIOUSLY) 
            + "_val_acc_" + str(validation_accuracy) 
            + ".h5") 
 #del model  # deletes the existing model
@@ -340,7 +342,7 @@ model.save(DATA_DIR
 
 # # summarize history for accuracy
 
-# In[ ]:
+# In[21]:
 
 # summarize history for accuracy
 plt.plot(history.history['acc'])
@@ -355,7 +357,7 @@ plt.show()
 
 # # summarize history for loss
 
-# In[ ]:
+# In[22]:
 
 
 plt.plot(history.history['loss'])
@@ -369,33 +371,34 @@ plt.show()
 
 # # Prediction
 
-# In[ ]:
+# In[26]:
 
 from keras.models import load_model
 
-model_path = DATA_DIR + saved_model
+model_path = DATA_DIR + SAVED_MODEL
 print(model_path)
 
 model = load_model(model_path) 
 model.summary()
 
 
-# In[ ]:
+# In[34]:
 
-image_name = "center_2016_12_01_13_38_59_461.jpg" # stering 0.05219137
-original_steering_angle = 0.7315571
-
-image_path =  DATA_DIR +   image_name
+original_steering_angle = -0.9426954
+image_path =  DATA_DIR + "IMG/left_2016_12_01_13_39_28_024.jpg"
 print(image_path)
-image = read_image(image_path)
-print(image.shape)
+
+from ImageHelper import read_image_array, read_image_binary
+#image = read_image_array(image_path)
+image = np.array(read_image_binary(image_path))
+#print(image.shape)
 plt.imshow(image, cmap='gray')
 plt.show()
 
 
 # ## Run model.predict(image)
 
-# In[ ]:
+# In[35]:
 
 predictions = model.predict( image[None, :, :], 
                             batch_size = 1, 
@@ -404,30 +407,11 @@ predictions = model.predict( image[None, :, :],
 
 # # Extract top prediction
 
-# In[ ]:
+# In[39]:
 
 from DataHelper import predict_class
 
-predicted_class = predict_class(predictions, steering_classes)
-
-print("original steering angle \n", original_steering_angle)
-print("top_prediction \n", predicted_class )
-
-
-# # Plot predictions (peaks are top classes)
-
-# In[ ]:
-
-# summarize history for loss
-plt.plot(predictions[0])
-plt.title('predictions')
-plt.ylabel('y')
-plt.xlabel('x')
-plt.legend(['predictions'], loc='upper right')
-plt.show()
-
-
-# In[ ]:
-
-
+percentages = predictions[0]
+print("percentages:", percentages)
+print("original steering angle:", original_steering_angle)
 
