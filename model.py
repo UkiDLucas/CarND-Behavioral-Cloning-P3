@@ -6,7 +6,7 @@ def get_custom_model():
     from keras.optimizers import SGD
     from keras.layers import ELU, InputLayer, Input
     from keras.layers.core import Flatten, Dense, Dropout, Activation, Lambda
-    from keras.layers.convolutional import Convolution2D, MaxPooling2D
+    from keras.layers.convolutional import Conv2D, MaxPooling2D
     from keras.layers.convolutional import ZeroPadding2D, Convolution1D, Cropping2D
 
     model = Sequential()
@@ -24,11 +24,11 @@ def get_custom_model():
     # normalize RGB 0-255 to -0.5 to 0.5
     model.add(Lambda(lambda x: x/255.0 - 0.5))
 
-    model.add(Convolution2D(24, 5, 5, border_mode='same', activation="relu", dim_ordering='tf'))
-    model.add(Convolution2D(36, 5, 5, border_mode='same', activation="relu" ))
-    model.add(Convolution2D(48, 3, 3, border_mode='same', activation="relu" ))
-    model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ))
-    model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ))
+    model.add(Conv2D(24, (5, 5), padding="same", activation="relu", data_format="channels_last"))
+    model.add(Conv2D(36, (5, 5), padding="same", activation="relu"))
+    #model.add(Conv2D(48, (3, 3), padding="same", activation="relu"))
+    #model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
+    #model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ))
     #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
     #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
     model.add(Flatten())

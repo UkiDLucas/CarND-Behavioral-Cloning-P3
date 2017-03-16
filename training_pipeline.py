@@ -12,8 +12,8 @@
 DATA_DIR = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-YIELD_BATCH_SIZE = 256
-RUN_EPOCHS = 5 
+YIELD_BATCH_SIZE = 128
+RUN_EPOCHS = 3 
 
 should_retrain_existing_model = False
 SAVED_MODEL = "model_epoch_5_val_acc_0.543157893482.h5"
@@ -85,37 +85,8 @@ from DataHelper import plot_histogram, get_steering_values, find_nearest
 
 # In[7]:
 
-def remove_zeros(training):
-    
-    print("len(training)", len(training))
-    indexes_to_keep = []
-    
-    steering_angles = get_steering_values(training)
-    plot_histogram("steering values", steering_angles, change_step=0.01)
-
-    for index in range (len(steering_angles)):
-        angle = steering_angles[index]
-        if angle != 0: 
-            indexes_to_keep.append(index)
-
-    print("len(indexes_to_keep)", len(indexes_to_keep))
-
-    training_to_keep = []
-    for index in indexes_to_keep:
-        training_to_keep.append(training[index])
-
-    training = training_to_keep
-    # release the memory
-    training_to_keep = []
-    indexes_to_keep = []
-
-    print("len(training)", len(training))
-
-    steering_angles = get_steering_values(training)
-    plot_histogram("steering values", steering_angles, change_step=0.01)
-    return training
-
-training = remove_zeros(training)
+from remove_zero_angles import *
+training, steering_angles = remove_zero_angles(training[0:500])
 
 
 # # Test method that extracts image names
@@ -141,11 +112,6 @@ print("found paths:", len(image_paths) )
 
 
 # # Read actual images
-
-# In[ ]:
-
-
-
 
 # In[10]:
 
@@ -186,19 +152,18 @@ from model import * # my own model implementation, in the same directory
 
 
 # # Compile model (configure learning process)
+# 
+# Before training a model, you need to configure the learning process, which is done via the compile method.
 
 # In[13]:
 
 model = get_custom_model()
 model.summary()
-# Before training a model, you need to configure the learning process, which is done via the compile method.
-# 
-# keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
+# keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 optimizer="adam" # 'sgd' | 'rmsprop'
 loss_function="mse" # | 'binary_crossentropy' | 'mse' | mean_squared_error | sparse_categorical_crossentropy
 metrics_array=['accuracy'] # , mean_pred, false_rates
-
 model.compile(optimizer, loss_function, metrics_array)
 
 
@@ -214,17 +179,12 @@ if should_retrain_existing_model:
     model.summary()
 # # Define yield Generator
 
-# In[14]:
+# In[ ]:
 
 from generator import * # my own implementation of yield generator, same directory
 
-
-# In[15]:
-
-
-
 train_generator = generator("training", training, DATA_DIR, YIELD_BATCH_SIZE )
-validation_generator = generator("testing", testing, DATA_DIR, YIELD_BATCH_SIZE )
+validation_generator = generator("validation", validation, DATA_DIR, YIELD_BATCH_SIZE )
 
 
 # # Train (fit) the model agaist given labels
@@ -232,20 +192,20 @@ validation_generator = generator("testing", testing, DATA_DIR, YIELD_BATCH_SIZE 
 # https://keras.io/models/sequential/
 # 
 # 
-# - steps_per_epoch: 
-# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch. It should typically be equal to the number of unique samples if your dataset divided by the batch size.
-# 
 # - initial_epoch: Epoch at which to start training (useful for resuming a previous training run)
 # 
+# - The semantics of the Keras 2 argument  `steps_per_epoch` is not the same as the Keras 1 argument `samples_per_epoch`. 
+# `steps_per_epoch` is the number of batches to draw from the generator at each epoch. Update your method calls accordingly.
+# 
 
-# In[16]:
+# In[ ]:
 
-history = model.fit_generator(train_generator,
-                              samples_per_epoch = len(training), 
-                              nb_epoch = RUN_EPOCHS, 
+history = model.fit_generator(train_generator, 
+                              epochs=RUN_EPOCHS, 
+                              validation_steps = len(validation), #803 
                               validation_data = validation_generator, 
-                              nb_val_samples = len(validation), 
-                              verbose = 1)
+                              verbose = 1, 
+                              steps_per_epoch = len(training) ) #2745
 
 
 # In[ ]:
@@ -310,7 +270,7 @@ plt.legend(['training error(loss)', 'validation error (loss)'], loc='upper right
 plt.show()
 
 
-# # Prediction
+# # The the Prediction
 
 # In[ ]:
 
