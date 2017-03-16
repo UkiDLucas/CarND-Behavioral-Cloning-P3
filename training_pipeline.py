@@ -7,7 +7,7 @@
 
 # ## Set parameters that will control the execution
 
-# In[25]:
+# In[1]:
 
 DATA_DIR = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
@@ -189,8 +189,7 @@ from model import * # my own model implementation, in the same directory
 
 # In[13]:
 
-input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
-model = get_custom_model(input_shape)
+model = get_custom_model()
 model.summary()
 # Before training a model, you need to configure the learning process, which is done via the compile method.
 # 
@@ -222,8 +221,10 @@ from generator import * # my own implementation of yield generator, same directo
 
 # In[15]:
 
-train_generator = generator(training, DATA_DIR, YIELD_BATCH_SIZE)
-validation_generator = generator(testing, DATA_DIR, YIELD_BATCH_SIZE)
+
+
+train_generator = generator("training", training, DATA_DIR, YIELD_BATCH_SIZE )
+validation_generator = generator("testing", testing, DATA_DIR, YIELD_BATCH_SIZE )
 
 
 # # Train (fit) the model agaist given labels
@@ -244,70 +245,10 @@ history = model.fit_generator(train_generator,
                               nb_epoch = RUN_EPOCHS, 
                               validation_data = validation_generator, 
                               nb_val_samples = len(validation), 
-                              verbose = 0)
-
-____________________________________________________________________________________________________
-Layer (type)                     Output Shape          Param #     Connected to                     
-====================================================================================================
-conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
-____________________________________________________________________________________________________
-flatten_1 (Flatten)              (None, 1638400)       0           conv2d_1_relu[0][0]              
-____________________________________________________________________________________________________
-dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
-====================================================================================================
-Total params: 1,639,297
-Trainable params: 1,639,297
-Non-trainable params: 0
-
-training_features.shape 590
-Train on 472 samples, validate on 118 samples
-- MacBook Pro CPU 13s / epoch
-- MacBook Pro GPU 5s / epoch
+                              verbose = 1)
 
 
-
-____________________________________________________________________________________________________
-Layer (type)                     Output Shape          Param #     Connected to                     
-====================================================================================================
-conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
-____________________________________________________________________________________________________
-conv2d_3_relu (Convolution2D)    (None, 160, 320, 32)  25632       conv2d_1_relu[0][0]              
-____________________________________________________________________________________________________
-flatten_1 (Flatten)              (None, 1638400)       0           conv2d_3_relu[0][0]              
-____________________________________________________________________________________________________
-dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
-====================================================================================================
-Total params: 1,664,929
-Trainable params: 1,664,929
-Non-trainable params: 0
-
-
-training_features.shape 590
-Train on 472 samples, validate on 118 samples
-- MacBook Pro CPU 114s / epoch
-- MacBook Pro GPU 29s / epoch (29%)
-
-____________________________________________________________________________________________________
-Layer (type)                     Output Shape          Param #     Connected to                     
-====================================================================================================
-conv2d_1_relu (Convolution2D)    (None, 160, 320, 32)  896         convolution2d_input_1[0][0]      
-____________________________________________________________________________________________________
-conv2d_2_relu (Convolution2D)    (None, 160, 320, 32)  9248        conv2d_1_relu[0][0]              
-____________________________________________________________________________________________________
-conv2d_3_relu (Convolution2D)    (None, 160, 320, 32)  25632       conv2d_2_relu[0][0]              
-____________________________________________________________________________________________________
-flatten_1 (Flatten)              (None, 1638400)       0           conv2d_3_relu[0][0]              
-____________________________________________________________________________________________________
-dense_1 (Dense)                  (None, 1)             1638401     flatten_1[0][0]                  
-====================================================================================================
-Total params: 1,674,177
-Trainable params: 1,674,177
-Non-trainable params: 0
-
-Train on 472 samples, validate on 118 samples
-- MacBook Pro CPU 156s / epoch
-- MacBook Pro GPU ResourceExhaustedError
-# In[18]:
+# In[ ]:
 
 # list all data in history
 print(history.history.keys())
@@ -329,7 +270,7 @@ print("validation_error", validation_error)
 
 # # Save the model
 
-# In[20]:
+# In[ ]:
 
 # creates a HDF5 file '___.h5'
 model.save(DATA_DIR 
@@ -342,7 +283,7 @@ model.save(DATA_DIR
 
 # # summarize history for accuracy
 
-# In[21]:
+# In[ ]:
 
 # summarize history for accuracy
 plt.plot(history.history['acc'])
@@ -357,7 +298,7 @@ plt.show()
 
 # # summarize history for loss
 
-# In[22]:
+# In[ ]:
 
 
 plt.plot(history.history['loss'])
@@ -371,18 +312,17 @@ plt.show()
 
 # # Prediction
 
-# In[26]:
+# In[ ]:
 
 from keras.models import load_model
 
-model_path = DATA_DIR + SAVED_MODEL
-print(model_path)
-
-model = load_model(model_path) 
+#model_path = DATA_DIR + SAVED_MODEL
+#print(model_path)
+#model = load_model(model_path) 
 model.summary()
 
 
-# In[34]:
+# In[ ]:
 
 original_steering_angle = -0.9426954
 image_path =  DATA_DIR + "IMG/left_2016_12_01_13_39_28_024.jpg"
@@ -398,7 +338,7 @@ plt.show()
 
 # ## Run model.predict(image)
 
-# In[35]:
+# In[ ]:
 
 predictions = model.predict( image[None, :, :], 
                             batch_size = 1, 
@@ -407,11 +347,24 @@ predictions = model.predict( image[None, :, :],
 
 # # Extract top prediction
 
-# In[39]:
+# In[ ]:
 
 from DataHelper import predict_class
 
 percentages = predictions[0]
 print("percentages:", percentages)
 print("original steering angle:", original_steering_angle)
+
+
+# In[ ]:
+
+# Make sound when done
+import os
+beep = lambda x: os.system("echo -n '\a';sleep 0.2;" * x)
+beep(5)
+
+
+# In[ ]:
+
+
 
