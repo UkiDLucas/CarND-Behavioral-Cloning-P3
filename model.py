@@ -1,100 +1,37 @@
+def get_custom_model(input_shape):
 
-# coding: utf-8
+    import keras.backend as K
+    from keras.models import Sequential
+    from keras.activations import relu, softmax
+    from keras.optimizers import SGD
+    from keras.layers import ELU, InputLayer, Input
+    from keras.layers.core import Flatten, Dense, Dropout, Activation, Lambda
+    from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Convolution1D
 
-# # Train Model
-# 
-# 
+    model = Sequential()
 
-# ## Set parameters that will control the execution
-
-# In[1]:
-
-data_dir = "../_DATA/CarND/p3_behavioral_cloning/r_001"
-image_dir = "IMG"
-driving_data_csv = "driving_log.csv"
-model_dir = "../_DATA/MODELS/"
-model_name = "model_p3_14x64x3_"
-batch_size = 256
-nb_epoch = 40 
-model_to_continue_training = "previous_model.h5"
-previous_trained_epochs = 30
-
-
-# # Allocate only a fraction of memory to TensorFlow GPU process
-
-# In[2]:
-
-# https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
-import tensorflow as tf
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6) # try range from 0.333 ot .9
-sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
-
-#### Show available CPU and GPU(s)
-from tensorflow.python.client import device_lib
-def get_available_CPU_GPU():
-    devices = device_lib.list_local_devices()
-    #return [x.name for x in devices if x.device_type == 'CPU']
-    return [x.name for x in devices ]
-
-print(get_available_CPU_GPU())
-
-
-# # Fetch data from CSV file
-
-# In[3]:
-
-from  DataHelper import read_csv
-csv_path = data_dir + driving_data_csv
-print("csv_path", csv_path)
-headers, data = read_csv(data_dir + driving_data_csv)
-
-
-# # Split data into training, testing and validation sets
-
-# In[ ]:
-
-from DataHelper import split_random
-training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
-
-print("training", training.shape)
-print("testing", testing.shape)
-print("validation", validation.shape)
-
-
-# # Fetch and visualize training steering angles
-# 
-# I would like to train a car on the set that has a nice bell cureve distribution of values:
-# - I can drive the car on the track backwards
-# - I can flip each image (and value)
-
-# In[ ]:
-
-from DataHelper import plot_histogram, get_steering_values, find_nearest
-steering_angles = get_steering_values(training)
-plot_histogram("steering values", steering_angles, change_step=0.01)
-
-
-# # Extract image names
-
-# In[ ]:
-
-from DataHelper import get_image_center_values 
-image_names = get_image_center_values(training)
-print("image count", image_names.shape[0])
-print(image_names[1])
-
-
-# # Create a list of image paths
-
-# In[ ]:
-
-image_paths = []
-for image_name in image_names:
-    image_paths.extend([data_dir + image_dir + image_name])
-print(image_paths[1]) 
-
-
-# In[ ]:
+    # TODO trim the image
+    
+    # normalize RGB 0-255 to -0.5 to 0.5
+    model.add(Lambda(lambda x: x/255.0 - 0.5, 
+                     input_shape=input_shape))
 
 
 
+
+    model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", dim_ordering='tf'))
+    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
+    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
+    model.add(Flatten())
+    #model.add(MaxPooling2D(pool_size=(2, 2), name="MaxPool_2x2"))
+
+    model.add(Dense(256, activation="relu")) #256
+    model.add(Dropout(0.25, name="Dropout_0.25_01"))
+    #model.add(Dense(256, activation="relu" )) #256
+
+    # CLASSIFICATION
+    #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
+
+    # REGRESSION
+    model.add(Dense(1, activation='linear'))
+    return model
