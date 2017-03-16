@@ -62,8 +62,8 @@ from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
 
 print("training", training.shape, type(training) )
-print("testing", testing.shape)
-print("validation", validation.shape)
+print("testing", testing.shape, type(training))
+print("validation", validation.shape, type(training))
 
 
 # # Fetch and visualize training steering angles
@@ -127,11 +127,11 @@ training = remove_zeros(training)
 def get_center_image_names(training):
     from DataHelper import get_image_center_values 
     image_names = get_image_center_values(training)
-    print("image count", image_names.shape[0])
-    print(image_names[1])
     return image_names
 
 image_names = get_center_image_names(training)
+print("image count", image_names.shape[0])
+print(image_names[1])
 
 
 # # Create a list of image paths
@@ -142,11 +142,11 @@ def build_image_paths(image_names):
     image_paths = []
     for image_name in image_names:
         image_paths.extend([data_dir + image_name])
-    print(image_paths[1]) 
-    print("found paths:", len(image_paths) ) 
     return image_paths
 
 image_paths = build_image_paths(image_names)
+print(image_paths[1]) 
+print("found paths:", len(image_paths) ) 
 
 
 # # Read actual images
@@ -182,49 +182,11 @@ plt.show()
 #print(sample_image[0][0:15])
 
 
-# # Define yield Generator
-
-# In[12]:
-
-import numpy as np
-
-def generator(training: np.ndarray, batch_size: int=32):
-    """
-    Yields batches of training and testing data every time the generator is called.
-    I will use Keras to pre-process images (trim, resize)
-    """
-    import sklearn
-    
-    while True:
-        #shuffle(training) # unnecessary and probably a bad idea
-        for offset in range(0, len(training), batch_size):
-            training_batch = training[offset:(offset + batch_size)]
-            
-            steering_angles = get_steering_values(training_batch)
-            
-            image_names = get_center_image_names(training_batch)
-            image_paths = build_image_paths(image_names)
-            training_features = read_images(image_paths)
-
-            # I will use Keras to pre-process images (trim, resize)
-            
-            X_train = np.array(training_features)
-            y_train = np.array(steering_angles)
-            
-            # it is OK to shuffle records within the batch
-            # may be not desirable if we want to learn from sequence of images in the future
-            yield sklearn.utils.shuffle(X_train, y_train)
-
-# compile and train the model using the generator function
-train_generator = generator(training, YIELD_BATCH_SIZE)
-validation_generator = generator(testing, YIELD_BATCH_SIZE)
-
-
 # # Import Keras (layer above TensorFlow)
 # 
 # https://keras.io/layers/convolutional/
 
-# In[13]:
+# In[14]:
 
 import keras.backend as K
 from keras.models import Sequential
@@ -241,31 +203,27 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2
 
 # ## Minimal Model
 
-# In[14]:
+# In[15]:
 
 # image_dimentions = (3, 80, 320)  # Trimmed image format
 
 
-# In[15]:
+# In[16]:
 
 def get_CDNN_model_minimal(input_shape):
     model = Sequential()
     
     model.add(Lambda(lambda x: x/255.0 - 0.5, # normalize RGB 0-255 to -0.5 to 0.5
-                     input_shape=input_shape,
-                    name="Normalize_RGB"))
-    model.add(Convolution2D(32, 3, 3, border_mode='same', 
-                            activation="relu", dim_ordering='tf', name="Convo_ReLU_32x3x3_01"))
-    model.add(Convolution2D(32, 5, 5, border_mode='same', 
-                            activation="relu", name="Convo_ReLU_32x5x5_02" ))
-    model.add(Convolution2D(32, 5, 5, border_mode='same', 
-                            activation="relu", name="Convo_ReLU_32x5x5_03" ))
+                     input_shape=input_shape))
+    model.add(Convolution2D(32, 3, 3, border_mode='same', activation="relu", dim_ordering='tf'))
+    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
+    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
     model.add(Flatten())
     #model.add(MaxPooling2D(pool_size=(2, 2), name="MaxPool_2x2"))
 
-    model.add(Dense(256, activation="relu", name="Dense_relu_256_01")) #256
+    model.add(Dense(256, activation="relu")) #256
     model.add(Dropout(0.25, name="Dropout_0.25_01"))
-    model.add(Dense(256, activation="relu", name="Dense_relu_256_02" )) #256
+    model.add(Dense(256, activation="relu" )) #256
 
     # CLASSIFICATION
     #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
@@ -277,7 +235,7 @@ def get_CDNN_model_minimal(input_shape):
 
 # # Compile model (configure learning process)
 
-# In[16]:
+# In[17]:
 
 input_shape = (160, 320, 3) # sample_image   (160, 320, 3)
 model = get_CDNN_model_minimal(input_shape)
@@ -303,18 +261,60 @@ if should_retrain_existing_model:
     model_path = model_dir + model_to_continue_training
     model = load_model(model_path) 
     model.summary()
+# # Define yield Generator
+
+# In[12]:
+
+import numpy as np
+
+def generator(example_set: np.ndarray, batch_size: int=32):
+    """
+    Yields batches of training or testing data every time the generator is called.
+    I will use Keras to pre-process images (trim, resize)
+    """
+    import sklearn
+    yield_number = 0
+    while True:
+        #shuffle(example_set) # unnecessary
+        for offset in range(0, len(example_set), batch_size):
+            
+            sample_batch = example_set[offset:(offset + batch_size)]
+            print(yield_number, "from sample set of size", len(example_set), 
+                  " getting batch", len(sample_batch) , "between", offset, "and", offset + batch_size)
+            
+            labels = get_steering_values(sample_batch)
+            
+            image_names = get_center_image_names(sample_batch)
+            image_paths = build_image_paths(image_names)
+            features = read_images(image_paths)
+
+            # I will use Keras to pre-process images (trim, resize)
+            
+            if len(features) != len(labels):
+                print("ERROR: ", len(features), " features and ", len(labels), "labels count not matching!")
+            
+            yield_number = yield_number = 1
+            #sklearn.utils.shuffle( ) # I prefer not to mix them
+            yield np.array(features), np.array(labels)
+
+
+# In[13]:
+
+train_generator = generator(training, YIELD_BATCH_SIZE)
+validation_generator = generator(testing, YIELD_BATCH_SIZE)
+
+
 # # Train (fit) the model agaist given labels
-
-# In[17]:
-
-print( "training_features.shape", len(training_features) )
-
+# 
 # https://keras.io/models/sequential/
+# 
+# 
 # steps_per_epoch: 
-# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished 
-# and starting the next epoch. 
-# It should typically be equal to the number of unique samples 
-# if your dataset divided by the batch size.
+# Total number of steps (batches of samples) to yield from generator before declaring one epoch finished and starting the next epoch. 
+# It should typically be equal to the number of unique samples if your dataset divided by the batch size.
+
+# In[18]:
+
 history = model.fit_generator(train_generator, 
                               samples_per_epoch = len(training), 
                               validation_data = validation_generator, 
