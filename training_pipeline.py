@@ -12,7 +12,7 @@
 data_dir = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-YIELD_BATCH_SIZE = 16 #256
+YIELD_BATCH_SIZE = 256
 RUN_EPOCHS = 5 
 
 should_retrain_existing_model = False
@@ -31,7 +31,10 @@ import DataHelper
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9) # try range from 0.3 to 0.9
+
+# Running out of GPU memory on Mac
+# InternalError: Dst tensor is not initialized.
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3) # try range from 0.3 to 0.9
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
 
 #### Show available CPU and GPU(s)
@@ -129,7 +132,8 @@ def get_center_image_names(training):
     image_names = get_image_center_values(training)
     return image_names
 
-image_names = get_center_image_names(training)
+# TEST THE METHOD
+image_names = get_center_image_names(training[0:10]) # process only first few
 print("image count", image_names.shape[0])
 print(image_names[1])
 
@@ -278,8 +282,8 @@ def generator(example_set: np.ndarray, batch_size: int=32):
         for offset in range(0, len(example_set), batch_size):
             
             sample_batch = example_set[offset:(offset + batch_size)]
-            print(yield_number, ") from sample set of size=", len(example_set), 
-                  "getting batch between", offset, "and", offset + batch_size,
+            print("batch", yield_number, ") from sample set of size=", len(example_set), 
+                  "getting batch between index", offset, "and", offset + batch_size,
                   "batch size=", len(sample_batch))
             
             labels = get_steering_values(sample_batch) 
