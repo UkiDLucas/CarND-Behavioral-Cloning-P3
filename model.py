@@ -26,11 +26,8 @@ def get_custom_model():
 
     model.add(Conv2D(24, (5, 5), padding="same", activation="relu", data_format="channels_last"))
     model.add(Conv2D(36, (5, 5), padding="same", activation="relu"))
-    #model.add(Conv2D(48, (3, 3), padding="same", activation="relu"))
-    #model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
-    #model.add(Convolution2D(64, 3, 3, border_mode='same', activation="relu" ))
-    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
-    #model.add(Convolution2D(32, 5, 5, border_mode='same', activation="relu" ))
+    model.add(Conv2D(48, (3, 3), padding="same", activation="relu"))
+    model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
     model.add(Flatten())
     #model.add(MaxPooling2D(pool_size=(2, 2), name="MaxPool_2x2"))
 
@@ -40,7 +37,8 @@ def get_custom_model():
     model.add(Dense(10, activation="relu" )) #256
 
     # CLASSIFICATION
-    #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) # default: linear | softmax | relu | sigmoid
+    #model.add(Dense(41, activation='linear' , name="dense_3_41_linear")) 
+    # default: linear | softmax | relu | sigmoid
 
     # REGRESSION
     model.add(Dense(1, activation='linear'))

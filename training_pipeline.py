@@ -12,7 +12,7 @@
 DATA_DIR = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-YIELD_BATCH_SIZE = 128
+YIELD_BATCH_SIZE = 126
 RUN_EPOCHS = 3 
 
 should_retrain_existing_model = False
@@ -34,7 +34,7 @@ import tensorflow as tf
 
 # Running out of GPU memory on Mac
 # InternalError: Dst tensor is not initialized.
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8) # try range from 0.3 to 0.9
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9) # try range from 0.3 to 0.9
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options))
 
 #### Show available CPU and GPU(s)
