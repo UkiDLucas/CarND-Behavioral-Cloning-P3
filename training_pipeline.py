@@ -7,27 +7,29 @@
 
 # ## Set parameters that will control the execution
 
-# In[1]:
+# In[ ]:
 
 DATA_DIR = "../_DATA/CarND/p3_behavioral_cloning/set_000/"
 image_dir = "IMG/"
 driving_data_csv = "driving_log_original.csv"
-YIELD_BATCH_SIZE = 126
+YIELD_BATCH_SIZE = 8
 RUN_EPOCHS = 3 
 
 should_retrain_existing_model = False
 SAVED_MODEL = "model_epoch_5_val_acc_0.543157893482.h5"
 RUN_EPOCHS_PREVIOUSLY = 0
 
+get_ipython().system('pwd')
 
-# In[2]:
+
+# In[ ]:
 
 import DataHelper
 
 
 # # Allocate only a fraction of memory to TensorFlow GPU process
 
-# In[3]:
+# In[ ]:
 
 # https://github.com/aymericdamien/TensorFlow-Examples/issues/38#issuecomment-265599695
 import tensorflow as tf
@@ -49,7 +51,7 @@ print(get_available_CPU_GPU())
 
 # # Fetch data from CSV file
 
-# In[4]:
+# In[ ]:
 
 from  DataHelper import read_csv
 csv_path = DATA_DIR + driving_data_csv
@@ -59,7 +61,7 @@ headers, data = read_csv(DATA_DIR + driving_data_csv)
 
 # # Split data into training, testing and validation sets
 
-# In[5]:
+# In[ ]:
 
 from DataHelper import split_random
 training, testing, validation = split_random(data, percent_train=75, percent_test=15) 
@@ -77,13 +79,13 @@ print("validation", validation.shape, type(training))
 
 # # Remove zero-steering angles from training set 
 
-# In[6]:
+# In[ ]:
 
 import numpy as np
 from DataHelper import plot_histogram, get_steering_values, find_nearest
 
 
-# In[7]:
+# In[ ]:
 
 from remove_zero_angles import *
 training, steering_angles = remove_zero_angles(training[0:500])
@@ -91,7 +93,7 @@ training, steering_angles = remove_zero_angles(training[0:500])
 
 # # Test method that extracts image names
 
-# In[8]:
+# In[ ]:
 
 from DataHelper import get_image_center_values
 
@@ -102,7 +104,7 @@ print("image count:", image_names.shape[0], "path:", image_names[1])
 
 # # Create a list of image paths
 
-# In[9]:
+# In[ ]:
 
 from generator import build_image_paths
 
@@ -113,7 +115,7 @@ print("found paths:", len(image_paths) )
 
 # # Read actual images
 
-# In[10]:
+# In[ ]:
 
 from generator import read_images
 
@@ -136,7 +138,7 @@ plt.show()
 # 
 # https://keras.io/layers/convolutional/
 
-# In[11]:
+# In[ ]:
 
 import cv2, numpy as np
 from DataHelper import mean_pred, false_rates
@@ -146,7 +148,7 @@ from DataHelper import mean_pred, false_rates
 
 # ## Minimal Model
 
-# In[12]:
+# In[ ]:
 
 from model import * # my own model implementation, in the same directory
 
@@ -155,7 +157,7 @@ from model import * # my own model implementation, in the same directory
 # 
 # Before training a model, you need to configure the learning process, which is done via the compile method.
 
-# In[13]:
+# In[ ]:
 
 model = get_custom_model()
 model.summary()
@@ -326,5 +328,5 @@ beep(5)
 
 # In[ ]:
 
-
+get_ipython().system('jupyter nbconvert --to script training_pipeline.ipynb')
 

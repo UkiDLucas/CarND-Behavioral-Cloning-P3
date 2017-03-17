@@ -26,13 +26,13 @@ def get_custom_model():
 
     model.add(Conv2D(24, (5, 5), padding="same", activation="relu", data_format="channels_last"))
     model.add(Conv2D(36, (5, 5), padding="same", activation="relu"))
-    model.add(Conv2D(48, (3, 3), padding="same", activation="relu"))
-    model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
+    #model.add(Conv2D(48, (3, 3), padding="same", activation="relu"))
+    #model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
     model.add(Flatten())
     #model.add(MaxPooling2D(pool_size=(2, 2), name="MaxPool_2x2"))
 
-    model.add(Dense(100, activation="relu")) #256
-    model.add(Dropout(0.25))
+    #model.add(Dense(100, activation="relu")) #256
+    #model.add(Dropout(0.25))
     model.add(Dense(50, activation="relu" )) #256
     model.add(Dense(10, activation="relu" )) #256
 

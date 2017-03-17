@@ -29,11 +29,6 @@ def predict_class(predictions, classes):
     return predicted_class
 
 
-# In[ ]:
-
-
-
-
 # In[3]:
 
 import numpy as np
